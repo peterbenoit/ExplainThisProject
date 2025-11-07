@@ -12,6 +12,15 @@ export function analyzeProject(root: string): ProjectOverview {
 		dependencies: [],
 		devDependencies: [],
 		structureSummary: [],
+		scripts: {},
+		buildTools: [],
+		testFrameworks: [],
+		lintingTools: [],
+		configFiles: [],
+		documentation: [],
+		cicd: [],
+		license: null,
+		author: null,
 		notes: []
 	};
 
@@ -29,6 +38,16 @@ export function analyzeProject(root: string): ProjectOverview {
 		try {
 			pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
 			overview.projectName = pkg.name || null;
+			overview.license = pkg.license || null;
+			overview.author = pkg.author ? (typeof pkg.author === 'string' ? pkg.author : pkg.author.name) : null;
+
+			// Repository information
+			if (pkg.repository) {
+				overview.repositoryInfo = {
+					url: typeof pkg.repository === 'string' ? pkg.repository : pkg.repository.url,
+					type: typeof pkg.repository === 'string' ? 'git' : pkg.repository.type || 'git'
+				};
+			}
 
 			if (pkg.dependencies) {
 				overview.dependencies = Object.keys(pkg.dependencies);
@@ -37,15 +56,65 @@ export function analyzeProject(root: string): ProjectOverview {
 				overview.devDependencies = Object.keys(pkg.devDependencies);
 			}
 
+			// Capture scripts
+			if (pkg.scripts) {
+				overview.scripts = pkg.scripts;
+			}
+
 			const has = (name: string) =>
 				(pkg.dependencies && pkg.dependencies[name]) ||
 				(pkg.devDependencies && pkg.devDependencies[name]);
 
-			// Determine project type from scripts
-			if (pkg.scripts) {
-				if (pkg.scripts.start || pkg.scripts.dev) { overview.projectType = "Application"; }
-				if (pkg.scripts.build) { overview.projectType += " (Build-enabled)"; }
+			// VS Code Extension Detection
+			if (pkg.engines && pkg.engines.vscode) {
+				overview.projectType = "VS Code Extension";
+				overview.vsCodeExtension = {
+					displayName: pkg.displayName || pkg.name || 'Unknown',
+					description: pkg.description || 'No description',
+					version: pkg.version || '0.0.0',
+					publisher: pkg.publisher || 'Unknown',
+					categories: pkg.categories || [],
+					commands: [],
+					activationEvents: pkg.activationEvents || [],
+					engines: pkg.engines.vscode
+				};
+
+				// Extract commands from contributes
+				if (pkg.contributes && pkg.contributes.commands) {
+					overview.vsCodeExtension.commands = pkg.contributes.commands.map((cmd: any) =>
+						`${cmd.command}: ${cmd.title}`
+					);
+				}
+			} else {
+				// Determine project type from scripts
+				if (pkg.scripts) {
+					if (pkg.scripts.start || pkg.scripts.dev) { overview.projectType = "Application"; }
+					if (pkg.scripts.build) { overview.projectType += " (Build-enabled)"; }
+					if (pkg.scripts.test) { overview.projectType += " (Tested)"; }
+				}
 			}
+
+			// Build tools detection
+			if (has("webpack")) { overview.buildTools.push("Webpack"); }
+			if (has("vite")) { overview.buildTools.push("Vite"); }
+			if (has("rollup")) { overview.buildTools.push("Rollup"); }
+			if (has("parcel")) { overview.buildTools.push("Parcel"); }
+			if (has("esbuild")) { overview.buildTools.push("ESBuild"); }
+			if (has("babel")) { overview.buildTools.push("Babel"); }
+
+			// Test frameworks detection
+			if (has("jest")) { overview.testFrameworks.push("Jest"); }
+			if (has("mocha")) { overview.testFrameworks.push("Mocha"); }
+			if (has("vitest")) { overview.testFrameworks.push("Vitest"); }
+			if (has("cypress")) { overview.testFrameworks.push("Cypress"); }
+			if (has("playwright")) { overview.testFrameworks.push("Playwright"); }
+			if (has("@vscode/test-electron")) { overview.testFrameworks.push("VS Code Extension Test"); }
+
+			// Linting tools detection
+			if (has("eslint")) { overview.lintingTools.push("ESLint"); }
+			if (has("prettier")) { overview.lintingTools.push("Prettier"); }
+			if (has("tslint")) { overview.lintingTools.push("TSLint"); }
+			if (has("stylelint")) { overview.lintingTools.push("Stylelint"); }
 
 			// Framework detection from dependencies (authoritative)
 			if (has("react") || has("react-dom")) { overview.frameworks.push("React"); }
@@ -56,6 +125,7 @@ export function analyzeProject(root: string): ProjectOverview {
 			if (has("express")) { overview.frameworks.push("Express"); }
 			if (has("fastify")) { overview.frameworks.push("Fastify"); }
 			if (has("nestjs")) { overview.frameworks.push("NestJS"); }
+			if (has("angular")) { overview.frameworks.push("Angular"); }
 
 			// Language detection from deps
 			if (has("typescript")) { overview.primaryLanguage = "TypeScript"; }
@@ -157,6 +227,57 @@ export function analyzeProject(root: string): ProjectOverview {
 			overview.primaryLanguage = "Python";
 		} catch {
 			overview.notes.push("Found pyproject.toml but couldn't parse it");
+		}
+	}
+
+	// --- Detect configuration files ---
+	const commonConfigFiles = [
+		'tsconfig.json', 'jsconfig.json',
+		'eslint.config.js', 'eslint.config.mjs', '.eslintrc.js', '.eslintrc.json',
+		'prettier.config.js', '.prettierrc',
+		'webpack.config.js', 'vite.config.js', 'rollup.config.js',
+		'.gitignore', '.gitattributes',
+		'Dockerfile', 'docker-compose.yml',
+		'.env', '.env.example',
+		'LICENSE', 'LICENSE.md', 'LICENSE.txt',
+		'.nvmrc', '.node-version'
+	];
+
+	for (const configFile of commonConfigFiles) {
+		if (fs.existsSync(path.join(root, configFile))) {
+			overview.configFiles.push(configFile);
+		}
+	}
+
+	// --- Detect documentation files ---
+	const commonDocFiles = [
+		'README.md', 'README.txt',
+		'CHANGELOG.md', 'CHANGELOG.txt',
+		'CONTRIBUTING.md',
+		'TODO.md', 'TODO.txt',
+		'API.md', 'USAGE.md',
+		'vsc-extension-quickstart.md'
+	];
+
+	for (const docFile of commonDocFiles) {
+		if (fs.existsSync(path.join(root, docFile))) {
+			overview.documentation.push(docFile);
+		}
+	}
+
+	// --- Detect CI/CD files ---
+	const cicdPaths = [
+		'.github/workflows',
+		'.gitlab-ci.yml',
+		'azure-pipelines.yml',
+		'Jenkinsfile',
+		'.travis.yml',
+		'.circleci/config.yml'
+	];
+
+	for (const cicdPath of cicdPaths) {
+		if (fs.existsSync(path.join(root, cicdPath))) {
+			overview.cicd.push(cicdPath);
 		}
 	}
 
