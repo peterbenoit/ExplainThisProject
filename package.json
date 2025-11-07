@@ -41,6 +41,11 @@
 				"command": "explain-this-project.explainProject",
 				"title": "Explain This Project",
 				"category": "Project Analysis"
+			},
+			{
+				"command": "explain-this-project.explainProjectForceOverwrite",
+				"title": "Explain This Project (Force Overwrite)",
+				"category": "Project Analysis"
 			}
 		],
 		"configuration": {
