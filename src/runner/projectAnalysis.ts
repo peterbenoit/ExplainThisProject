@@ -43,23 +43,23 @@ export function analyzeProject(root: string): ProjectOverview {
 
 			// Determine project type from scripts
 			if (pkg.scripts) {
-				if (pkg.scripts.start || pkg.scripts.dev) overview.projectType = "Application";
-				if (pkg.scripts.build) overview.projectType += " (Build-enabled)";
+				if (pkg.scripts.start || pkg.scripts.dev) { overview.projectType = "Application"; }
+				if (pkg.scripts.build) { overview.projectType += " (Build-enabled)"; }
 			}
 
 			// Framework detection from dependencies (authoritative)
-			if (has("react") || has("react-dom")) overview.frameworks.push("React");
-			if (has("vue")) overview.frameworks.push("Vue");
-			if (has("svelte")) overview.frameworks.push("Svelte");
-			if (has("next")) overview.frameworks.push("Next.js");
-			if (has("nuxt")) overview.frameworks.push("Nuxt.js");
-			if (has("express")) overview.frameworks.push("Express");
-			if (has("fastify")) overview.frameworks.push("Fastify");
-			if (has("nestjs")) overview.frameworks.push("NestJS");
+			if (has("react") || has("react-dom")) { overview.frameworks.push("React"); }
+			if (has("vue")) { overview.frameworks.push("Vue"); }
+			if (has("svelte")) { overview.frameworks.push("Svelte"); }
+			if (has("next")) { overview.frameworks.push("Next.js"); }
+			if (has("nuxt")) { overview.frameworks.push("Nuxt.js"); }
+			if (has("express")) { overview.frameworks.push("Express"); }
+			if (has("fastify")) { overview.frameworks.push("Fastify"); }
+			if (has("nestjs")) { overview.frameworks.push("NestJS"); }
 
 			// Language detection from deps
-			if (has("typescript")) overview.primaryLanguage = "TypeScript";
-			else overview.primaryLanguage = "JavaScript";
+			if (has("typescript")) { overview.primaryLanguage = "TypeScript"; }
+			else { overview.primaryLanguage = "JavaScript"; }
 		} catch {
 			// If package.json exists but isn't readable, we move on.
 		}
@@ -124,9 +124,9 @@ export function analyzeProject(root: string): ProjectOverview {
 				(composer.require && composer.require[name]) ||
 				(composer["require-dev"] && composer["require-dev"][name]);
 
-			if (hasPhp("laravel/framework")) overview.frameworks.push("Laravel");
-			if (hasPhp("symfony/symfony")) overview.frameworks.push("Symfony");
-			if (hasPhp("cakephp/cakephp")) overview.frameworks.push("CakePHP");
+			if (hasPhp("laravel/framework")) { overview.frameworks.push("Laravel"); }
+			if (hasPhp("symfony/symfony")) { overview.frameworks.push("Symfony"); }
+			if (hasPhp("cakephp/cakephp")) { overview.frameworks.push("CakePHP"); }
 		} catch {
 			overview.notes.push("Found composer.json but couldn't parse it");
 		}
@@ -165,23 +165,23 @@ export function analyzeProject(root: string): ProjectOverview {
 
 	// If no language determined by config files, fall back to extensions
 	if (overview.primaryLanguage === "Unknown") {
-		if (files.some(f => f.endsWith(".rs"))) overview.primaryLanguage = "Rust";
-		else if (files.some(f => f.endsWith(".go"))) overview.primaryLanguage = "Go";
-		else if (files.some(f => f.endsWith(".ts"))) overview.primaryLanguage = "TypeScript";
-		else if (files.some(f => f.endsWith(".js"))) overview.primaryLanguage = "JavaScript";
-		else if (files.some(f => f.endsWith(".py"))) overview.primaryLanguage = "Python";
-		else if (files.some(f => f.endsWith(".php"))) overview.primaryLanguage = "PHP";
-		else if (files.some(f => f.endsWith(".java"))) overview.primaryLanguage = "Java";
-		else if (files.some(f => f.endsWith(".cs"))) overview.primaryLanguage = "C#";
-		else if (files.some(f => f.endsWith(".cpp") || f.endsWith(".cc") || f.endsWith(".cxx"))) overview.primaryLanguage = "C++";
-		else if (files.some(f => f.endsWith(".c"))) overview.primaryLanguage = "C";
+		if (files.some(f => f.endsWith(".rs"))) { overview.primaryLanguage = "Rust"; }
+		else if (files.some(f => f.endsWith(".go"))) { overview.primaryLanguage = "Go"; }
+		else if (files.some(f => f.endsWith(".ts"))) { overview.primaryLanguage = "TypeScript"; }
+		else if (files.some(f => f.endsWith(".js"))) { overview.primaryLanguage = "JavaScript"; }
+		else if (files.some(f => f.endsWith(".py"))) { overview.primaryLanguage = "Python"; }
+		else if (files.some(f => f.endsWith(".php"))) { overview.primaryLanguage = "PHP"; }
+		else if (files.some(f => f.endsWith(".java"))) { overview.primaryLanguage = "Java"; }
+		else if (files.some(f => f.endsWith(".cs"))) { overview.primaryLanguage = "C#"; }
+		else if (files.some(f => f.endsWith(".cpp") || f.endsWith(".cc") || f.endsWith(".cxx"))) { overview.primaryLanguage = "C++"; }
+		else if (files.some(f => f.endsWith(".c"))) { overview.primaryLanguage = "C"; }
 	}
 
 	// Only if no framework determined yet, fallback to file patterns
 	if (overview.frameworks.length === 0) {
-		if (files.some(f => f.endsWith(".vue"))) overview.frameworks.push("Vue");
-		if (files.some(f => f.endsWith(".jsx") || f.endsWith(".tsx"))) overview.frameworks.push("React");
-		if (files.some(f => f.includes("svelte"))) overview.frameworks.push("Svelte");
+		if (files.some(f => f.endsWith(".vue"))) { overview.frameworks.push("Vue"); }
+		if (files.some(f => f.endsWith(".jsx") || f.endsWith(".tsx"))) { overview.frameworks.push("React"); }
+		if (files.some(f => f.includes("svelte"))) { overview.frameworks.push("Svelte"); }
 	}
 
 	// Entry point detection based on language and project type
@@ -217,22 +217,34 @@ export function analyzeProject(root: string): ProjectOverview {
 		.map(fullPath => path.relative(root, fullPath));
 
 	// Directory summary (top-level only)
-	overview.structureSummary = fs.readdirSync(root, { withFileTypes: true })
-		.filter(d => d.isDirectory() && !["node_modules", ".git"].includes(d.name))
-		.map(d => d.name);
+	try {
+		overview.structureSummary = fs.readdirSync(root, { withFileTypes: true })
+			.filter(d => d.isDirectory() && !["node_modules", ".git"].includes(d.name))
+			.map(d => d.name);
+	} catch (error) {
+		overview.structureSummary = [];
+		overview.notes.push("Could not access project directory");
+	}
 
 	return overview;
 }
 
 function walk(dir: string, fileList: string[] = []): string[] {
-	for (const entry of fs.readdirSync(dir)) {
-		const full = path.join(dir, entry);
-		if (fs.statSync(full).isDirectory()) {
-			if (["node_modules", ".git"].includes(entry)) continue;
-			walk(full, fileList);
-		} else {
-			fileList.push(full);
+	try {
+		for (const entry of fs.readdirSync(dir)) {
+			const full = path.join(dir, entry);
+			if (fs.statSync(full).isDirectory()) {
+				if (["node_modules", ".git"].includes(entry)) {
+					continue;
+				}
+				walk(full, fileList);
+			} else {
+				fileList.push(full);
+			}
 		}
+	} catch (error) {
+		// Directory doesn't exist or is not accessible
+		return fileList;
 	}
 	return fileList;
 }

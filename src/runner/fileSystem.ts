@@ -11,7 +11,7 @@ export function getWorkspaceRoot(): string | null {
 }
 
 export function listFiles(dir: string, depth = 3): string[] {
-	if (depth < 0) return [];
+	if (depth < 0) {return [];}
 	let result: string[] = [];
 
 	for (const entry of fs.readdirSync(dir)) {
@@ -20,7 +20,7 @@ export function listFiles(dir: string, depth = 3): string[] {
 
 		if (stat.isDirectory()) {
 			// Ignore heavy or irrelevant directories
-			if (["node_modules", ".git", "dist", "build"].includes(entry)) continue;
+			if (["node_modules", ".git", "dist", "build"].includes(entry)) {continue;}
 			result = result.concat(listFiles(fullPath, depth - 1));
 		} else {
 			result.push(fullPath);

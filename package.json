@@ -3,20 +3,21 @@
 	"displayName": "Explain This Project",
 	"description": "A VS Code extension that analyzes your project structure and generates a comprehensive PROJECT_OVERVIEW.md file with details about languages, frameworks, dependencies, and architecture.",
 	"version": "0.1.0",
-	"publisher": "your-publisher-name",
+	"icon": "icon.png",
+	"publisher": "peterbenoit",
 	"author": {
-		"name": "Your Name",
-		"email": "your.email@example.com"
+		"name": "Peter Benoit",
+		"email": "peter.benoit@example.com"
 	},
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/yourusername/explain-this-project.git"
+		"url": "https://github.com/peterbenoit/explain-this-project.git"
 	},
 	"bugs": {
-		"url": "https://github.com/yourusername/explain-this-project/issues"
+		"url": "https://github.com/peterbenoit/explain-this-project/issues"
 	},
-	"homepage": "https://github.com/yourusername/explain-this-project#readme",
+	"homepage": "https://github.com/peterbenoit/explain-this-project#readme",
 	"keywords": [
 		"project",
 		"analysis",
@@ -31,19 +32,45 @@
 	},
 	"categories": [
 		"Other",
-		"Documentation"
-	],
-	"activationEvents": [
-		"onCommand:explain-this-project.explainProject"
+		"Programming Languages"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "explain-this-project.explainProject",
-				"title": "Explain This Project"
+				"title": "Explain This Project",
+				"category": "Project Analysis"
 			}
-		]
+		],
+		"configuration": {
+			"title": "Explain This Project",
+			"properties": {
+				"explainThisProject.includeDevDependencies": {
+					"type": "boolean",
+					"default": true,
+					"description": "Include development dependencies in the analysis"
+				},
+				"explainThisProject.maxDirectoryDepth": {
+					"type": "number",
+					"default": 3,
+					"minimum": 1,
+					"maximum": 10,
+					"description": "Maximum directory depth to analyze"
+				},
+				"explainThisProject.excludeDirectories": {
+					"type": "array",
+					"default": [
+						"node_modules",
+						".git",
+						"dist",
+						"build",
+						"coverage"
+					],
+					"description": "Directories to exclude from analysis"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
