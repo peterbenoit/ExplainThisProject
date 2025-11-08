@@ -160,24 +160,10 @@ npm test
 
 # Package and install locally
 vsce package
-code --install-extension explain-this-project-0.1.0.vsix
+code --install-extension explain-this-project-[VERSION].vsix
 
 # Test in Extension Development Host
 # Press F5 in VS Code to launch a new Extension Development Host window
-```
-
-### Project Structure
-
-```
-├── src/
-│   ├── extension.ts          # Main extension entry point
-│   ├── types.ts             # TypeScript interfaces
-│   └── runner/
-│       ├── projectAnalysis.ts    # Core analysis logic
-│       ├── renderMarkdown.ts     # Markdown generation
-│       └── fileSystem.ts         # File utilities
-├── package.json             # Extension metadata
-└── tsconfig.json           # TypeScript configuration
 ```
 
 ## Roadmap
