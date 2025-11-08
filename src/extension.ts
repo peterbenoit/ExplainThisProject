@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { analyzeProject } from "./runner/projectAnalysis";
 import { renderProjectOverview } from "./runner/renderMarkdown";
+import { runAgent } from "./agent/agentLoop";
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -144,7 +145,20 @@ export function activate(context: vscode.ExtensionContext) {
 		() => performAnalysis(true)
 	);
 
-	context.subscriptions.push(disposable1, disposable2);
+	// Register the ask questions command
+	const disposable3 = vscode.commands.registerCommand(
+		"explain-this-project.askQuestions",
+		() => {
+			const workspaceFolders = vscode.workspace.workspaceFolders;
+			if (!workspaceFolders || workspaceFolders.length === 0) {
+				vscode.window.showErrorMessage("No workspace folder is open. Open a project folder first.");
+				return;
+			}
+			runAgent(workspaceFolders[0].uri.fsPath);
+		}
+	);
+
+	context.subscriptions.push(disposable1, disposable2, disposable3);
 }
 
 export function deactivate() { }

@@ -2,7 +2,7 @@
 	"name": "explain-this-project",
 	"displayName": "Explain This Project",
 	"description": "A VS Code extension that analyzes your project structure and generates a comprehensive PROJECT_OVERVIEW.md file with details about languages, frameworks, dependencies, and architecture.",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"icon": "icon.png",
 	"publisher": "peterbenoit",
 	"author": {
@@ -46,6 +46,11 @@
 				"command": "explain-this-project.explainProjectForceOverwrite",
 				"title": "Explain This Project (Force Overwrite)",
 				"category": "Project Analysis"
+			},
+			{
+				"command": "explain-this-project.askQuestions",
+				"title": "Explain This Project: Ask Questions",
+				"category": "Project Analysis"
 			}
 		],
 		"configuration": {
@@ -73,6 +78,20 @@
 						"coverage"
 					],
 					"description": "Directories to exclude from analysis"
+				},
+				"explainThisProject.openaiApiKey": {
+					"type": "string",
+					"default": "",
+					"description": "OpenAI API key for the project explanation agent",
+					"markdownDescription": "Your OpenAI API key. Get one at [OpenAI Platform](https://platform.openai.com/api-keys)"
+				},
+				"explainThisProject.llmProvider": {
+					"type": "string",
+					"enum": [
+						"openai"
+					],
+					"default": "openai",
+					"description": "LLM provider to use for project explanations (extensible for future providers)"
 				}
 			}
 		}
@@ -84,6 +103,9 @@
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src",
 		"test": "vscode-test"
+	},
+	"dependencies": {
+		"openai": "^4.67.0"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.105.0",
