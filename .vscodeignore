@@ -9,3 +9,14 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/.vscode-test.*
+
+# Development files (not needed in published extension)
+.env.local
+publish.sh
+TODO.md
+node_modules/**
+.git/**
+
+# GitHub-specific files (use MARKETPLACE.md instead)
+.github/**
+**/README.md

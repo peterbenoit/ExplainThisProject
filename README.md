@@ -28,7 +28,7 @@ This is **not** a coding agent. It does not modify source code, scaffold new pro
 - Timestamps for tracking when analysis was performed
 - No hallucination - only reports what actually exists
 
-## � Installation
+## Installation
 
 ### From VS Code Marketplace
 1. Open VS Code
@@ -114,14 +114,14 @@ The extension can be customized through VS Code settings:
 | `maxDirectoryDepth` | number | `3` | Maximum directory depth to analyze |
 | `excludeDirectories` | array | `["node_modules", ".git", "dist", "build", "coverage"]` | Directories to exclude from analysis |
 
-## 📋 Requirements
+## Requirements
 
 - VS Code 1.105.0 or higher
 - An open workspace/folder (the extension analyzes the current workspace)
 - No network connectivity required
 - No external dependencies needed
 
-## 🛠️ Development
+## Development
 
 ### Prerequisites
 
