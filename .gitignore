@@ -74,4 +74,12 @@ temp/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+# Local secrets and build files
 publish.sh
+.env.local
+
+# Lock files (generated automatically)
+package-lock.json
+
+# Development notes
+TODO.md
