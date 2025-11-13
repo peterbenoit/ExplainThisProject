@@ -2,7 +2,7 @@
 	"name": "explain-this-project",
 	"displayName": "Explain This Project",
 	"description": "A VS Code extension that analyzes your project structure and generates a comprehensive PROJECT_OVERVIEW.md file with details about languages, frameworks, dependencies, and architecture.",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"icon": "icon.png",
 	"publisher": "peterbenoit",
 	"author": {
