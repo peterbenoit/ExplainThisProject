@@ -2,7 +2,7 @@
 	"name": "explain-this-project",
 	"displayName": "Explain This Project",
 	"description": "A VS Code extension that analyzes your project structure and generates a comprehensive PROJECT_OVERVIEW.md file with details about languages, frameworks, dependencies, and architecture.",
-	"version": "0.1.8",
+	"version": "0.1.10",
 	"icon": "icon.png",
 	"publisher": "peterbenoit",
 	"author": {
@@ -37,9 +37,7 @@
 	],
 	"main": "./out/extension.js",
 	"activationEvents": [
-		"onCommand:explain-this-project.explainProject",
-		"onCommand:explain-this-project.explainProjectForceOverwrite",
-		"onCommand:explain-this-project.askQuestions"
+		"onStartupFinished"
 	],
 	"contributes": {
 		"commands": [
@@ -103,9 +101,13 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
+		"vscode:prepublish": "npm run package",
+		"compile": "npm run check-types && node esbuild.js",
+		"check-types": "tsc --noEmit",
+		"watch": "npm-run-all -p watch:*",
+		"watch:esbuild": "node esbuild.js --watch",
+		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+		"package": "npm run check-types && node esbuild.js --production",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src",
 		"test": "vscode-test"
@@ -114,14 +116,16 @@
 		"openai": "^4.67.0"
 	},
 	"devDependencies": {
-		"@types/vscode": "^1.105.0",
 		"@types/mocha": "^10.0.10",
 		"@types/node": "22.x",
+		"@types/vscode": "^1.105.0",
 		"@typescript-eslint/eslint-plugin": "^8.45.0",
 		"@typescript-eslint/parser": "^8.45.0",
-		"eslint": "^9.36.0",
-		"typescript": "^5.9.3",
 		"@vscode/test-cli": "^0.0.11",
-		"@vscode/test-electron": "^2.5.2"
+		"@vscode/test-electron": "^2.5.2",
+		"esbuild": "^0.27.0",
+		"eslint": "^9.36.0",
+		"npm-run-all": "^4.1.5",
+		"typescript": "^5.9.3"
 	}
 }
