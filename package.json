@@ -36,6 +36,11 @@
 		"Programming Languages"
 	],
 	"main": "./out/extension.js",
+	"activationEvents": [
+		"onCommand:explain-this-project.explainProject",
+		"onCommand:explain-this-project.explainProjectForceOverwrite",
+		"onCommand:explain-this-project.askQuestions"
+	],
 	"contributes": {
 		"commands": [
 			{
