@@ -1,22 +1,32 @@
+# Ignore development files, but ensure compiled output is included.
+# The 'out' directory is not listed, so it will be included by default.
+
 .vscode/**
 .vscode-test/**
+.vscode-test.mjs
 src/**
-.gitignore
-.yarnrc
-vsc-extension-quickstart.md
-**/tsconfig.json
-**/eslint.config.mjs
-**/*.map
-**/*.ts
-**/.vscode-test.*
-
-# Development files (not needed in published extension)
-.env.local
-publish.sh
-TODO.md
+.github/**
 node_modules/**
 .git/**
 
-# GitHub-specific files (use MARKETPLACE.md instead)
-.github/**
-**/README.md
+# Ignore config files
+.gitignore
+.yarnrc
+**/tsconfig.json
+**/eslint.config.mjs
+
+# Ignore unnecessary build artifacts
+**/*.map
+
+# Ignore miscellaneous development and project files
+vsc-extension-quickstart.md
+README.md
+.DS_Store
+*.vsix
+.env.local
+publish.sh
+TODO.md
+CHANGELOG.md
+PROJECT_OVERVIEW.md
+package-lock.json
+
