@@ -5,10 +5,10 @@ import { analyzeProject } from "./runner/projectAnalysis";
 import { renderProjectOverview } from "./runner/renderMarkdown";
 import { runAgent } from "./agent/agentLoop";
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
 
 	// Helper function for the core analysis logic
-	const performAnalysis = async (forceOverwrite: boolean = false) => {
+	const performAnalysis = async (forceOverwrite: boolean = false): Promise<void> => {
 		// Ensure a folder is open
 		const workspaceFolders = vscode.workspace.workspaceFolders;
 		if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -16,7 +16,11 @@ export function activate(context: vscode.ExtensionContext) {
 			return;
 		}
 
-		const root = workspaceFolders[0].uri.fsPath;
+		const root = workspaceFolders[0]?.uri.fsPath;
+		if (!root) {
+			vscode.window.showErrorMessage("Unable to determine workspace root path.");
+			return;
+		}
 
 		try {
 			// Show progress indicator
@@ -154,11 +158,16 @@ export function activate(context: vscode.ExtensionContext) {
 				vscode.window.showErrorMessage("No workspace folder is open. Open a project folder first.");
 				return;
 			}
-			runAgent(workspaceFolders[0].uri.fsPath);
+			const root = workspaceFolders[0]?.uri.fsPath;
+			if (!root) {
+				vscode.window.showErrorMessage("Unable to determine workspace root path.");
+				return;
+			}
+			runAgent(root);
 		}
 	);
 
 	context.subscriptions.push(disposable1, disposable2, disposable3);
 }
 
-export function deactivate() { }
+export function deactivate(): void { }

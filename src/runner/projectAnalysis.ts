@@ -33,40 +33,59 @@ export function analyzeProject(root: string): ProjectOverview {
 	const pyprojectPath = path.join(root, "pyproject.toml");
 
 	// --- Node.js/JavaScript/TypeScript projects ---
-	let pkg: any = null;
+	interface PackageJson {
+		name?: string;
+		license?: string;
+		author?: string | { name: string };
+		repository?: string | { url: string; type?: string };
+		dependencies?: Record<string, string>;
+		devDependencies?: Record<string, string>;
+		scripts?: Record<string, string>;
+		engines?: { vscode?: string };
+		displayName?: string;
+		description?: string;
+		version?: string;
+		publisher?: string;
+		categories?: string[];
+		contributes?: { commands?: Array<{ command: string; title: string }> };
+		activationEvents?: string[];
+	}
+
+	let pkg: PackageJson | null = null;
 	if (fs.existsSync(pkgPath)) {
 		try {
-			pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
-			overview.projectName = pkg.name || null;
-			overview.license = pkg.license || null;
-			overview.author = pkg.author ? (typeof pkg.author === 'string' ? pkg.author : pkg.author.name) : null;
+			const content = fs.readFileSync(pkgPath, "utf8");
+			pkg = JSON.parse(content);
+			overview.projectName = pkg?.name ?? null;
+			overview.license = pkg?.license ?? null;
+			overview.author = pkg?.author ? (typeof pkg.author === 'string' ? pkg.author : pkg.author.name) : null;
 
 			// Repository information
-			if (pkg.repository) {
+			if (pkg?.repository) {
 				overview.repositoryInfo = {
 					url: typeof pkg.repository === 'string' ? pkg.repository : pkg.repository.url,
 					type: typeof pkg.repository === 'string' ? 'git' : pkg.repository.type || 'git'
 				};
 			}
 
-			if (pkg.dependencies) {
+			if (pkg?.dependencies) {
 				overview.dependencies = Object.keys(pkg.dependencies);
 			}
-			if (pkg.devDependencies) {
+			if (pkg?.devDependencies) {
 				overview.devDependencies = Object.keys(pkg.devDependencies);
 			}
 
 			// Capture scripts
-			if (pkg.scripts) {
+			if (pkg?.scripts) {
 				overview.scripts = pkg.scripts;
 			}
 
-			const has = (name: string) =>
-				(pkg.dependencies && pkg.dependencies[name]) ||
-				(pkg.devDependencies && pkg.devDependencies[name]);
+			const has = (name: string): boolean =>
+				Boolean((pkg?.dependencies && pkg.dependencies[name]) ||
+				(pkg?.devDependencies && pkg.devDependencies[name]));
 
 			// VS Code Extension Detection
-			if (pkg.engines && pkg.engines.vscode) {
+			if (pkg?.engines?.vscode) {
 				overview.projectType = "VS Code Extension";
 				overview.vsCodeExtension = {
 					displayName: pkg.displayName || pkg.name || 'Unknown',
@@ -80,14 +99,14 @@ export function analyzeProject(root: string): ProjectOverview {
 				};
 
 				// Extract commands from contributes
-				if (pkg.contributes && pkg.contributes.commands) {
-					overview.vsCodeExtension.commands = pkg.contributes.commands.map((cmd: any) =>
+				if (pkg.contributes?.commands) {
+					overview.vsCodeExtension.commands = pkg.contributes.commands.map((cmd) =>
 						`${cmd.command}: ${cmd.title}`
 					);
 				}
 			} else {
 				// Determine project type from scripts
-				if (pkg.scripts) {
+				if (pkg?.scripts) {
 					if (pkg.scripts.start || pkg.scripts.dev) { overview.projectType = "Application"; }
 					if (pkg.scripts.build) { overview.projectType += " (Build-enabled)"; }
 					if (pkg.scripts.test) { overview.projectType += " (Tested)"; }
@@ -140,7 +159,7 @@ export function analyzeProject(root: string): ProjectOverview {
 		try {
 			const cargoContent = fs.readFileSync(cargoPath, "utf8");
 			const nameMatch = cargoContent.match(/name\s*=\s*"([^"]+)"/);
-			if (nameMatch) {
+			if (nameMatch?.[1]) {
 				overview.projectName = nameMatch[1];
 			}
 			overview.primaryLanguage = "Rust";
@@ -148,7 +167,7 @@ export function analyzeProject(root: string): ProjectOverview {
 
 			// Extract dependencies from Cargo.toml
 			const depsSection = cargoContent.match(/\[dependencies\]([\s\S]*?)(?=\[|\Z)/);
-			if (depsSection) {
+			if (depsSection?.[1]) {
 				const deps = depsSection[1].match(/^(\w+)\s*=/gm);
 				if (deps) {
 					overview.dependencies = deps.map(dep => dep.replace(/\s*=.*/, ''));
@@ -164,7 +183,7 @@ export function analyzeProject(root: string): ProjectOverview {
 		try {
 			const goModContent = fs.readFileSync(goModPath, "utf8");
 			const moduleMatch = goModContent.match(/module\s+(.+)/);
-			if (moduleMatch) {
+			if (moduleMatch?.[1]) {
 				const modulePath = moduleMatch[1].trim();
 				overview.projectName = path.basename(modulePath);
 			}
@@ -206,11 +225,11 @@ export function analyzeProject(root: string): ProjectOverview {
 	let pythonDeps: string[] = [];
 	if (fs.existsSync(requirementsPath)) {
 		try {
-			const requirements = fs.readFileSync(requirementsPath, "utf8");
+const requirements = fs.readFileSync(requirementsPath, "utf8");
 			pythonDeps = requirements.split('\n')
-				.filter(line => line.trim() && !line.trim().startsWith('#'))
-				.map(line => line.split(/[>=<]/)[0].trim())
-				.filter(dep => dep);
+				.filter((line: string) => line.trim() && !line.trim().startsWith('#'))
+				.map((line: string) => line.split(/[>=<]/)[0].trim())
+				.filter((dep: string) => dep);
 			overview.dependencies = pythonDeps;
 		} catch {
 			overview.notes.push("Found requirements.txt but couldn't parse it");
@@ -221,7 +240,7 @@ export function analyzeProject(root: string): ProjectOverview {
 		try {
 			const pyprojectContent = fs.readFileSync(pyprojectPath, "utf8");
 			const nameMatch = pyprojectContent.match(/name\s*=\s*"([^"]+)"/);
-			if (nameMatch) {
+			if (nameMatch?.[1]) {
 				overview.projectName = nameMatch[1];
 			}
 			overview.primaryLanguage = "Python";
@@ -334,7 +353,13 @@ export function analyzeProject(root: string): ProjectOverview {
 
 	overview.entryPoints = candidates
 		.map(rel => path.join(root, rel))
-		.filter(fs.existsSync)
+		.filter(fullPath => {
+			try {
+				return fs.existsSync(fullPath);
+			} catch {
+				return false;
+			}
+		})
 		.map(fullPath => path.relative(root, fullPath));
 
 	// Directory summary (top-level only)

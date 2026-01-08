@@ -3,27 +3,27 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { analyzeProject } from '../runner/projectAnalysis';
 
-suite('Extension Test Suite', () => {
+suite('Extension Test Suite', (): void => {
 	vscode.window.showInformationMessage('Start all tests.');
 
-	test('Extension should be present', () => {
+	test('Extension should be present', (): void => {
 		assert.ok(vscode.extensions.getExtension('peterbenoit.explain-this-project'));
 	});
 
-	test('Should activate successfully', async () => {
+	test('Should activate successfully', async (): Promise<void> => {
 		const extension = vscode.extensions.getExtension('peterbenoit.explain-this-project');
 		assert.ok(extension);
 		await extension?.activate();
 		assert.strictEqual(extension?.isActive, true);
 	});
 
-	test('Command should be registered', async () => {
+	test('Command should be registered', async (): Promise<void> => {
 		const commands = await vscode.commands.getCommands(true);
 		assert.ok(commands.includes('explain-this-project.explainProject'));
 	});
 
-	suite('Project Analysis Tests', () => {
-		test('Should detect TypeScript project', () => {
+	suite('Project Analysis Tests', (): void => {
+		test('Should detect TypeScript project', (): void => {
 			// This test would need a mock project structure
 			// For now, test basic functionality
 			const testRoot = path.join(__dirname, '../../');
@@ -34,7 +34,7 @@ suite('Extension Test Suite', () => {
 			assert.strictEqual(result.projectName, 'explain-this-project');
 		});
 
-		test('Should handle empty project gracefully', () => {
+		test('Should handle empty project gracefully', (): void => {
 			// Test with a non-existent directory
 			const result = analyzeProject('/non/existent/path');
 
@@ -43,7 +43,7 @@ suite('Extension Test Suite', () => {
 			assert.strictEqual(result.projectType, 'Unknown');
 		});
 
-		test('Should detect dependencies correctly', () => {
+		test('Should detect dependencies correctly', (): void => {
 			const testRoot = path.join(__dirname, '../../');
 			const result = analyzeProject(testRoot);
 
