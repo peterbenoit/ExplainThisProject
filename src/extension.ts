@@ -4,6 +4,7 @@ import * as path from "path";
 import { analyzeProject } from "./runner/projectAnalysis";
 import { renderProjectOverview } from "./runner/renderMarkdown";
 import { runAgent } from "./agent/agentLoop";
+import { generateAiSummary } from "./agent/llm";
 
 export function activate(context: vscode.ExtensionContext): void {
 	const outputChannel = vscode.window.createOutputChannel("Explain This Project");
@@ -29,22 +30,40 @@ export function activate(context: vscode.ExtensionContext): void {
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: "Analyzing project...",
-				cancellable: false
-			}, async (progress) => {
+				cancellable: true
+			}, async (progress, token) => {
 				progress.report({ increment: 0 });
 
 				// Run analysis
-				progress.report({ increment: 50, message: "Scanning files and dependencies..." });
+				progress.report({ increment: 10, message: "Scanning files and dependencies..." });
 				const config = vscode.workspace.getConfiguration('explainThisProject');
+				if (token.isCancellationRequested) { return; }
 				const overview = analyzeProject(root, {
 					includeDevDependencies: config.get('includeDevDependencies', true),
 					maxDirectoryDepth: config.get('maxDirectoryDepth', 3),
 					excludeDirectories: config.get<string[]>('excludeDirectories', [])
 				});
 
+				if (token.isCancellationRequested) { return; }
+
 				// Generate markdown content
-				progress.report({ increment: 80, message: "Generating overview..." });
-				const markdownContent = renderProjectOverview(overview);
+				progress.report({ increment: 60, message: "Building overview document..." });
+				const staticMarkdown = renderProjectOverview(overview);
+
+				if (token.isCancellationRequested) { return; }
+
+				// Attempt AI narrative summary via Copilot (best-effort)
+				const aiTimeoutMs = config.get<number>('aiSummaryTimeoutSeconds', 30) * 1000;
+				progress.report({ increment: 70, message: "Generating AI summary (Cancel to skip)..." });
+				const aiSummary = await generateAiSummary(staticMarkdown, token, aiTimeoutMs);
+				if (token.isCancellationRequested) { return; }
+				const aiSection = aiSummary
+					? `## 🤖 AI Summary\n\n${aiSummary}\n\n---\n\n`
+					: '';
+				const markdownContent = staticMarkdown.replace(
+					'# Project Overview\n',
+					`# Project Overview\n\n${aiSection}`
+				);
 
 				// Check if PROJECT_OVERVIEW.md already exists
 				const overviewPath = path.join(root, "PROJECT_OVERVIEW.md");

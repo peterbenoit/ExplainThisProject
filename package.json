@@ -2,7 +2,7 @@
 	"name": "explain-this-project",
 	"displayName": "Explain This Project",
 	"description": "Analyzes your project structure and generates a comprehensive PROJECT_OVERVIEW.md file with details about languages, frameworks, dependencies, and architecture.",
-	"version": "0.2.2",
+	"version": "0.2.4",
 	"icon": "icon.png",
 	"publisher": "peterbenoit",
 	"author": {
@@ -87,6 +87,13 @@
 					"default": "",
 					"description": "OpenAI API key for the project explanation agent",
 					"markdownDescription": "Your OpenAI API key. Get one at [OpenAI Platform](https://platform.openai.com/api-keys)"
+				},
+				"explainThisProject.aiSummaryTimeoutSeconds": {
+					"type": "number",
+					"default": 30,
+					"minimum": 5,
+					"maximum": 120,
+					"description": "Maximum seconds to wait for the AI summary before skipping it and writing the file anyway"
 				},
 				"explainThisProject.llmProvider": {
 					"type": "string",

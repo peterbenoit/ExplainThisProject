@@ -123,3 +123,58 @@ export async function askLLM(context: string, question: string): Promise<string>
 	const provider = getLLMProvider();
 	return provider.askLLM(context, question);
 }
+
+// Generate a narrative AI summary of the project overview
+export async function generateAiSummary(
+	markdownOverview: string,
+	token?: vscode.CancellationToken,
+	timeoutMs: number = 30000
+): Promise<string | null> {
+	try {
+		const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
+		if (models.length === 0) { return null; }
+		if (token?.isCancellationRequested) { return null; }
+
+		const model = models[0];
+		const messages = [
+			vscode.LanguageModelChatMessage.User(
+				`You are a senior software engineer reviewing a project for a new team member.
+
+Based on the structured project data below, write a concise narrative summary (3-5 paragraphs) that covers:
+1. What this project is and what it does
+2. The technology stack and key architectural choices
+3. Any notable patterns, frameworks, or dependencies worth highlighting
+4. How a developer would get started
+
+Be specific and factual. Only use information present in the data. Do not invent details.
+
+PROJECT DATA:
+${markdownOverview}
+
+Write the summary in plain markdown paragraphs with no extra headings.`
+			)
+		];
+
+		// Race the LLM stream against a timeout and cancellation
+		const streamResult = model.sendRequest(messages, {}, token);
+
+		const summaryPromise = (async () => {
+			const response = await streamResult;
+			let result = '';
+			for await (const chunk of response.text) {
+				if (token?.isCancellationRequested) { return null; }
+				result += chunk;
+			}
+			return result.trim() || null;
+		})();
+
+		const timeoutPromise = new Promise<null>(resolve =>
+			setTimeout(() => resolve(null), timeoutMs)
+		);
+
+		return await Promise.race([summaryPromise, timeoutPromise]);
+	} catch {
+		// AI summary is best-effort — never fail the whole operation
+		return null;
+	}
+}
