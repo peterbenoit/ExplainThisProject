@@ -6,6 +6,8 @@ import { renderProjectOverview } from "./runner/renderMarkdown";
 import { runAgent } from "./agent/agentLoop";
 
 export function activate(context: vscode.ExtensionContext): void {
+	const outputChannel = vscode.window.createOutputChannel("Explain This Project");
+	context.subscriptions.push(outputChannel);
 
 	// Helper function for the core analysis logic
 	const performAnalysis = async (forceOverwrite: boolean = false): Promise<void> => {
@@ -33,7 +35,12 @@ export function activate(context: vscode.ExtensionContext): void {
 
 				// Run analysis
 				progress.report({ increment: 50, message: "Scanning files and dependencies..." });
-				const overview = analyzeProject(root);
+				const config = vscode.workspace.getConfiguration('explainThisProject');
+				const overview = analyzeProject(root, {
+					includeDevDependencies: config.get('includeDevDependencies', true),
+					maxDirectoryDepth: config.get('maxDirectoryDepth', 3),
+					excludeDirectories: config.get<string[]>('excludeDirectories', [])
+				});
 
 				// Generate markdown content
 				progress.report({ increment: 80, message: "Generating overview..." });
@@ -113,19 +120,18 @@ export function activate(context: vscode.ExtensionContext): void {
 					}
 
 					// Also show brief summary in output channel
-					const output = vscode.window.createOutputChannel("Explain This Project");
-					output.clear();
-					output.appendLine("✅ PROJECT OVERVIEW GENERATED");
-					output.appendLine("────────────────────────────────────────");
-					output.appendLine(`📄 File: PROJECT_OVERVIEW.md`);
-					output.appendLine(`📁 Project: ${overview.projectName ?? "Unknown"}`);
-					output.appendLine(`🏷️  Type: ${overview.projectType ?? "Unknown"}`);
-					output.appendLine(`💻 Language: ${overview.primaryLanguage ?? "Unknown"}`);
+					outputChannel.clear();
+					outputChannel.appendLine("✅ PROJECT OVERVIEW GENERATED");
+					outputChannel.appendLine("────────────────────────────────────────");
+					outputChannel.appendLine(`📄 File: PROJECT_OVERVIEW.md`);
+					outputChannel.appendLine(`📁 Project: ${overview.projectName ?? "Unknown"}`);
+					outputChannel.appendLine(`🏷️  Type: ${overview.projectType ?? "Unknown"}`);
+					outputChannel.appendLine(`💻 Language: ${overview.primaryLanguage ?? "Unknown"}`);
 					if (overview.frameworks.length > 0) {
-						output.appendLine(`🔧 Frameworks: ${overview.frameworks.join(", ")}`);
+						outputChannel.appendLine(`🔧 Frameworks: ${overview.frameworks.join(", ")}`);
 					}
-					output.appendLine("");
-					output.appendLine("Open PROJECT_OVERVIEW.md to see the full analysis.");
+					outputChannel.appendLine("");
+					outputChannel.appendLine("Open PROJECT_OVERVIEW.md to see the full analysis.");
 				} else {
 					progress.report({ increment: 100, message: "Cancelled." });
 				}

@@ -191,15 +191,13 @@ export function renderProjectOverview(overview: ProjectOverview): string {
 		lines.push("");
 	}
 
-	// Project Structure
-	lines.push("## 📁 Project Structure");
-	lines.push("");
+	// Source Structure
 	if (overview.structureSummary.length > 0) {
-		overview.structureSummary.forEach(dir => {
-			lines.push(`- \`${dir}/\``);
-		});
-	} else {
-		lines.push("No directories detected");
+		lines.push("## 📁 Source Structure");
+		lines.push("");
+		lines.push("```");
+		overview.structureSummary.forEach(line => lines.push(line));
+		lines.push("```");
 	}
 	lines.push("");
 

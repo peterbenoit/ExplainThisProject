@@ -2,7 +2,18 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProjectOverview } from "../types";
 
-export function analyzeProject(root: string): ProjectOverview {
+export interface AnalysisOptions {
+	includeDevDependencies?: boolean;
+	maxDirectoryDepth?: number;
+	excludeDirectories?: string[];
+}
+
+export function analyzeProject(root: string, options: AnalysisOptions = {}): ProjectOverview {
+	const {
+		includeDevDependencies = true,
+		maxDirectoryDepth = 20,
+		excludeDirectories: extraExcludes = []
+	} = options;
 	const overview: ProjectOverview = {
 		projectName: null,
 		projectType: "Unknown",
@@ -71,7 +82,7 @@ export function analyzeProject(root: string): ProjectOverview {
 			if (pkg?.dependencies) {
 				overview.dependencies = Object.keys(pkg.dependencies);
 			}
-			if (pkg?.devDependencies) {
+			if (pkg?.devDependencies && includeDevDependencies) {
 				overview.devDependencies = Object.keys(pkg.devDependencies);
 			}
 
@@ -82,7 +93,7 @@ export function analyzeProject(root: string): ProjectOverview {
 
 			const has = (name: string): boolean =>
 				Boolean((pkg?.dependencies && pkg.dependencies[name]) ||
-				(pkg?.devDependencies && pkg.devDependencies[name]));
+					(pkg?.devDependencies && pkg.devDependencies[name]));
 
 			// VS Code Extension Detection
 			if (pkg?.engines?.vscode) {
@@ -204,7 +215,7 @@ export function analyzeProject(root: string): ProjectOverview {
 			if (composer.require) {
 				overview.dependencies = Object.keys(composer.require);
 			}
-			if (composer["require-dev"]) {
+			if (composer["require-dev"] && includeDevDependencies) {
 				overview.devDependencies = Object.keys(composer["require-dev"]);
 			}
 
@@ -225,7 +236,7 @@ export function analyzeProject(root: string): ProjectOverview {
 	let pythonDeps: string[] = [];
 	if (fs.existsSync(requirementsPath)) {
 		try {
-const requirements = fs.readFileSync(requirementsPath, "utf8");
+			const requirements = fs.readFileSync(requirementsPath, "utf8");
 			pythonDeps = requirements.split('\n')
 				.filter((line: string) => line.trim() && !line.trim().startsWith('#'))
 				.map((line: string) => line.split(/[>=<]/)[0].trim())
@@ -301,7 +312,7 @@ const requirements = fs.readFileSync(requirementsPath, "utf8");
 	}
 
 	// --- Walk all files for fallback detection ---
-	const files = walk(root);
+	const files = walk(root, [], extraExcludes, maxDirectoryDepth);
 
 	// If no language determined by config files, fall back to extensions
 	if (overview.primaryLanguage === "Unknown") {
@@ -362,33 +373,69 @@ const requirements = fs.readFileSync(requirementsPath, "utf8");
 		})
 		.map(fullPath => path.relative(root, fullPath));
 
-	// Directory summary (top-level only)
-	try {
-		overview.structureSummary = fs.readdirSync(root, { withFileTypes: true })
-			.filter(d => d.isDirectory() && !["node_modules", ".git"].includes(d.name))
-			.map(d => d.name);
-	} catch (error) {
+	// Source structure tree
+	const excluded = new Set(["node_modules", ".git", ...extraExcludes]);
+	const sourceDirCandidates = ["src", "lib", "app", "cmd"];
+	const sourceDir = sourceDirCandidates.find(d => {
+		try { return fs.statSync(path.join(root, d)).isDirectory(); } catch { return false; }
+	});
+	if (sourceDir) {
+		const treeLines = buildSourceTree(path.join(root, sourceDir), excluded);
+		overview.structureSummary = [`${sourceDir}/`, ...treeLines];
+	} else {
 		overview.structureSummary = [];
-		overview.notes.push("Could not access project directory");
 	}
 
 	return overview;
 }
 
-function walk(dir: string, fileList: string[] = []): string[] {
+function buildSourceTree(dir: string, excluded: Set<string>, prefix: string = '', currentDepth: number = 0, maxDepth: number = 4): string[] {
+	if (currentDepth >= maxDepth) { return []; }
+	let entries: import('fs').Dirent[];
+	try {
+		entries = fs.readdirSync(dir, { withFileTypes: true })
+			.filter(e => !excluded.has(e.name))
+			.sort((a, b) => {
+				if (a.isDirectory() && !b.isDirectory()) { return -1; }
+				if (!a.isDirectory() && b.isDirectory()) { return 1; }
+				return a.name.localeCompare(b.name);
+			});
+	} catch {
+		return [];
+	}
+	const lines: string[] = [];
+	entries.forEach((entry, i) => {
+		const isLast = i === entries.length - 1;
+		const connector = isLast ? '└── ' : '├── ';
+		const childPrefix = isLast ? '    ' : '│   ';
+		if (entry.isDirectory()) {
+			lines.push(`${prefix}${connector}${entry.name}/`);
+			lines.push(...buildSourceTree(path.join(dir, entry.name), excluded, prefix + childPrefix, currentDepth + 1, maxDepth));
+		} else {
+			lines.push(`${prefix}${connector}${entry.name}`);
+		}
+	});
+	return lines;
+}
+
+function walk(dir: string, fileList: string[] = [], extraExcludes: string[] = [], maxDepth: number = 20, currentDepth: number = 0): string[] {
+	if (currentDepth >= maxDepth) {
+		return fileList;
+	}
+	const excluded = new Set(["node_modules", ".git", ...extraExcludes]);
 	try {
 		for (const entry of fs.readdirSync(dir)) {
 			const full = path.join(dir, entry);
 			if (fs.statSync(full).isDirectory()) {
-				if (["node_modules", ".git"].includes(entry)) {
+				if (excluded.has(entry)) {
 					continue;
 				}
-				walk(full, fileList);
+				walk(full, fileList, extraExcludes, maxDepth, currentDepth + 1);
 			} else {
 				fileList.push(full);
 			}
 		}
-	} catch (error) {
+	} catch {
 		// Directory doesn't exist or is not accessible
 		return fileList;
 	}

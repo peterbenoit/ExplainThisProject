@@ -2,7 +2,7 @@
 	"name": "explain-this-project",
 	"displayName": "Explain This Project",
 	"description": "Analyzes your project structure and generates a comprehensive PROJECT_OVERVIEW.md file with details about languages, frameworks, dependencies, and architecture.",
-	"version": "0.1.15",
+	"version": "0.2.1",
 	"icon": "icon.png",
 	"publisher": "peterbenoit",
 	"author": {
@@ -17,7 +17,7 @@
 	"bugs": {
 		"url": "https://github.com/peterbenoit/explain-this-project/issues"
 	},
-	"homepage": "https://github.com/peterbenoit/explain-this-project#readme",
+	"homepage": "https://www.peterbenoit.com/vscode/",
 	"keywords": [
 		"project",
 		"analysis",
@@ -107,6 +107,7 @@
 		"watch:esbuild": "node esbuild.js --watch",
 		"watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
 		"package": "npm run check-types && node esbuild.js --production",
+		"install-extension": "vsce package && code --install-extension $(ls explain-this-project-*.vsix | sort -V | tail -1)",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src",
 		"test": "vscode-test"

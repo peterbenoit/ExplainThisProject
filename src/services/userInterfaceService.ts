@@ -7,10 +7,11 @@ export interface IUserInterfaceService {
 	showWarningMessage(message: string, actions?: string[]): Promise<string | undefined>;
 	showInformationMessage(message: string, actions?: string[]): Promise<string | undefined>;
 	createOutputChannel(name: string): vscode.OutputChannel;
+	executeCommand(command: string, ...args: unknown[]): Promise<unknown>;
 }
 
 export class UserInterfaceService implements IUserInterfaceService {
-	constructor(private vscodeAPI: typeof vscode) {}
+	constructor(private vscodeAPI: typeof vscode) { }
 
 	async showInputBox(options: vscode.InputBoxOptions): Promise<string | undefined> {
 		return this.vscodeAPI.window.showInputBox(options);
@@ -34,5 +35,9 @@ export class UserInterfaceService implements IUserInterfaceService {
 
 	createOutputChannel(name: string): vscode.OutputChannel {
 		return this.vscodeAPI.window.createOutputChannel(name);
+	}
+
+	async executeCommand(command: string, ...args: unknown[]): Promise<unknown> {
+		return this.vscodeAPI.commands.executeCommand(command, ...args);
 	}
 }

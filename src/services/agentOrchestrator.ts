@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { IConfigurationService } from './configurationService';
 import { IUserInterfaceService } from './userInterfaceService';
 import { IProjectOverviewService } from './projectOverviewService';
@@ -10,7 +11,7 @@ export interface IAgentOrchestrator {
 }
 
 export class AgentOrchestrator implements IAgentOrchestrator {
-	private outputChannel: import('vscode').OutputChannel;
+	private outputChannel: vscode.OutputChannel;
 	private isSessionActive = false;
 
 	constructor(
@@ -127,10 +128,7 @@ export class AgentOrchestrator implements IAgentOrchestrator {
 		);
 
 		if (action === 'Open Settings') {
-			// This would need to be injected or handled differently
-			// For now, we'll use global vscode command
-			const vscode = require('vscode');
-			vscode.commands.executeCommand('workbench.action.openSettings', 'explainThisProject.openaiApiKey');
+			await this.uiService.executeCommand('workbench.action.openSettings', 'explainThisProject.openaiApiKey');
 		}
 	}
 }

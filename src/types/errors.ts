@@ -18,7 +18,3 @@ export interface ErrorContext {
 	filePath?: string;
 	additionalInfo?: Record<string, unknown>;
 }
-
-export type Result<T, E = ExtensionError> = 
-	| { success: true; data: T }
-	| { success: false; error: E };

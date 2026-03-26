@@ -13,7 +13,7 @@ async function main() {
 		sourcesContent: false,
 		platform: 'node',
 		outfile: 'out/extension.js',
-		external: ['vscode', 'openai'],
+		external: ['vscode'],
 		logLevel: 'silent',
 		plugins: [
 			/* add to the end of plugins array */
