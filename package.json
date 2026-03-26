@@ -2,7 +2,7 @@
 	"name": "explain-this-project",
 	"displayName": "Explain This Project",
 	"description": "Analyzes your project structure and generates a comprehensive PROJECT_OVERVIEW.md file with details about languages, frameworks, dependencies, and architecture.",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"icon": "icon.png",
 	"publisher": "peterbenoit",
 	"author": {
@@ -91,10 +91,15 @@
 				"explainThisProject.llmProvider": {
 					"type": "string",
 					"enum": [
+						"copilot",
 						"openai"
 					],
-					"default": "openai",
-					"description": "LLM provider to use for project explanations (extensible for future providers)"
+					"enumDescriptions": [
+						"Use GitHub Copilot (free tier supported, no API key required)",
+						"Use OpenAI directly (requires API key)"
+					],
+					"default": "copilot",
+					"description": "LLM provider to use for the Ask Questions agent"
 				}
 			}
 		}

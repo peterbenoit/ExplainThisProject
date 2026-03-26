@@ -9,7 +9,7 @@ export interface IConfigurationService {
 }
 
 export class ConfigurationService implements IConfigurationService {
-	constructor(private vscodeAPI: typeof vscode) {}
+	constructor(private vscodeAPI: typeof vscode) { }
 
 	getConfig(): ExplainThisProjectConfig {
 		const config = this.vscodeAPI.workspace.getConfiguration('explainThisProject');
@@ -18,7 +18,7 @@ export class ConfigurationService implements IConfigurationService {
 			maxDirectoryDepth: config.get('maxDirectoryDepth', 3),
 			excludeDirectories: config.get('excludeDirectories', []),
 			openaiApiKey: config.get('openaiApiKey', ''),
-			llmProvider: config.get('llmProvider', 'openai')
+			llmProvider: config.get('llmProvider', 'copilot')
 		};
 	}
 
@@ -33,12 +33,14 @@ export class ConfigurationService implements IConfigurationService {
 	}
 
 	async validateApiKey(): Promise<boolean> {
+		// Copilot uses vscode.lm and requires no API key
+		if (this.getLLMProvider() === 'copilot') {
+			return true;
+		}
 		const apiKey = this.getApiKey();
 		if (!apiKey) {
 			return false;
 		}
-
-		// Basic validation - could be enhanced with actual API call
 		return apiKey.startsWith('sk-') && apiKey.length > 20;
 	}
 }

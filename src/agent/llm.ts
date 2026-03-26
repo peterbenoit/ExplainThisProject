@@ -5,6 +5,44 @@ export interface LLMProvider {
 	askLLM(context: string, question: string): Promise<string>;
 }
 
+class CopilotProvider implements LLMProvider {
+	async askLLM(context: string, question: string): Promise<string> {
+		const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
+		if (models.length === 0) {
+			throw new Error('No Copilot model available. Please ensure GitHub Copilot is installed and you are signed in.');
+		}
+
+		const model = models[0];
+		const messages = [
+			vscode.LanguageModelChatMessage.User(
+				`You are a project explainer. Answer questions accurately based only on the provided project summary. Do not make assumptions or hallucinate.
+
+PROJECT SUMMARY:
+${context}
+
+QUESTION:
+${question}
+
+ANSWER:`
+			)
+		];
+
+		try {
+			const response = await model.sendRequest(messages, {});
+			let result = '';
+			for await (const chunk of response.text) {
+				result += chunk;
+			}
+			return result.trim() || "I couldn't generate a response. Please try again.";
+		} catch (error) {
+			if (error instanceof vscode.LanguageModelError) {
+				throw new Error(`Copilot error: ${error.message}`);
+			}
+			throw error;
+		}
+	}
+}
+
 class OpenAIProvider implements LLMProvider {
 	private client: OpenAI | null = null;
 
@@ -68,14 +106,13 @@ ANSWER:`;
 
 // Factory function to get the appropriate LLM provider
 export function getLLMProvider(): LLMProvider {
-	const provider = vscode.workspace.getConfiguration('explainThisProject').get<string>('llmProvider', 'openai');
+	const provider = vscode.workspace.getConfiguration('explainThisProject').get<string>('llmProvider', 'copilot');
 
 	switch (provider) {
+		case 'copilot':
+			return new CopilotProvider();
 		case 'openai':
 			return new OpenAIProvider();
-		// Future providers can be added here:
-		// case 'claude':
-		//     return new ClaudeProvider();
 		default:
 			throw new Error(`Unsupported LLM provider: ${provider}`);
 	}

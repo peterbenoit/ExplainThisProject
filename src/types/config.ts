@@ -6,4 +6,4 @@ export interface ExplainThisProjectConfig {
 	llmProvider: LLMProviderType;
 }
 
-export type LLMProviderType = 'openai' | 'claude' | 'anthropic';
+export type LLMProviderType = 'copilot' | 'openai' | 'claude' | 'anthropic';
