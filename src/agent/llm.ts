@@ -130,10 +130,19 @@ export async function generateAiSummary(
 	token?: vscode.CancellationToken,
 	timeoutMs: number = 30000
 ): Promise<string | null> {
+	// Create a CancellationTokenSource that we control for timeout + user cancel
+	const cts = new vscode.CancellationTokenSource();
+
+	// Cancel if the caller's token fires (user pressed Cancel)
+	const userCancelListener = token?.onCancellationRequested(() => cts.cancel());
+
+	// Cancel after timeout — this actually stops the Copilot stream
+	const timeoutHandle = setTimeout(() => cts.cancel(), timeoutMs);
+
 	try {
 		const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
 		if (models.length === 0) { return null; }
-		if (token?.isCancellationRequested) { return null; }
+		if (cts.token.isCancellationRequested) { return null; }
 
 		const model = models[0];
 		const messages = [
@@ -155,26 +164,19 @@ Write the summary in plain markdown paragraphs with no extra headings.`
 			)
 		];
 
-		// Race the LLM stream against a timeout and cancellation
-		const streamResult = model.sendRequest(messages, {}, token);
-
-		const summaryPromise = (async () => {
-			const response = await streamResult;
-			let result = '';
-			for await (const chunk of response.text) {
-				if (token?.isCancellationRequested) { return null; }
-				result += chunk;
-			}
-			return result.trim() || null;
-		})();
-
-		const timeoutPromise = new Promise<null>(resolve =>
-			setTimeout(() => resolve(null), timeoutMs)
-		);
-
-		return await Promise.race([summaryPromise, timeoutPromise]);
+		const response = await model.sendRequest(messages, {}, cts.token);
+		let result = '';
+		for await (const chunk of response.text) {
+			if (cts.token.isCancellationRequested) { return result.trim() || null; }
+			result += chunk;
+		}
+		return result.trim() || null;
 	} catch {
 		// AI summary is best-effort — never fail the whole operation
 		return null;
+	} finally {
+		clearTimeout(timeoutHandle);
+		userCancelListener?.dispose();
+		cts.dispose();
 	}
 }
