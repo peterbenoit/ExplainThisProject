@@ -2,13 +2,13 @@
 
 ## 🤖 AI Summary
 
-**Explain This Project** is a VS Code extension created by Peter Benoit that analyzes a project's structure and automatically generates a comprehensive `PROJECT_OVERVIEW.md` file. The generated overview captures details about the project's languages, frameworks, dependencies, and architecture. It exposes three commands: one to generate the overview, one to force-overwrite an existing overview, and an "Ask Questions" command that leverages an LLM-powered agent to let developers interrogate their project interactively. The extension is currently at version 0.3.0 and is licensed under MIT.
+**Explain This Project** is a Visual Studio Code extension created by Peter Benoit that analyzes a project's structure and automatically generates a comprehensive `PROJECT_OVERVIEW.md` file. The generated overview includes details about the project's languages, frameworks, dependencies, and architecture. It exposes three commands: one to generate the overview, one to force-overwrite an existing overview, and an "Ask Questions" command that allows interactive querying about the project. The extension activates on startup and is currently at version 0.3.2, targeting VS Code engine ^1.105.0.
 
-The project is written in TypeScript and targets VS Code engine `^1.105.0`. It uses **esbuild** as its bundler rather than webpack, which is a deliberate choice for faster build times. The only production dependency is the **openai** package, which powers the LLM integration found in `src/agent/llm.ts` and the agent loop in `src/agent/agentLoop.ts`. Development tooling includes ESLint with TypeScript-specific plugins for code quality, the official `@vscode/test-cli` and `@vscode/test-electron` packages for extension testing, and `@vscode/vsce` for packaging the extension into a `.vsix` file.
+The project is written in TypeScript and uses **esbuild** as its bundler, with type-checking handled by the TypeScript compiler separately. Its only production dependency is the **openai** package, which indicates that the extension leverages OpenAI's API (likely for LLM-powered analysis and the "Ask Questions" feature). The development toolchain includes ESLint for code quality, the official `@vscode/test-cli` and `@vscode/test-electron` packages for testing, and `@vscode/vsce` for packaging the extension into a `.vsix` file.
 
-The source code follows a clean, layered architecture. The `runner/` directory handles low-level concerns like file system traversal, git history analysis, project analysis, and markdown rendering. The `services/` layer sits above it, orchestrating these runners through an `agentOrchestrator`, a `configurationService`, a `projectOverviewService`, and a `userInterfaceService`. The `agent/` directory encapsulates the LLM interaction logic. Shared types and error handling are separated into dedicated `types/` and `utils/` directories. This separation of concerns makes the codebase navigable and testable. Notably, git analysis (`gitAnalysis.ts`) produces churn hotspots, bug clusters, commit velocity, and revert/hotfix metrics — all visible in the generated overview.
+The source code is organized into a clean, layered architecture. The `agent/` directory contains an agent loop and LLM integration (`agentLoop.ts`, `llm.ts`), suggesting an agentic pattern where the LLM is called iteratively. The `runner/` directory handles core analysis tasks—file system traversal, Git history analysis, project analysis, and Markdown rendering. A `services/` layer provides orchestration (`agentOrchestrator.ts`), configuration management, UI interaction, and the main project overview generation logic. Shared types and error handling are separated into their own `types/` and `utils/` directories. Git churn data shows that `package.json`, `src/extension.ts`, and `src/runner/projectAnalysis.ts` are the most frequently modified files, and `src/runner/gitAnalysis.ts` has been a notable bug cluster, having been touched in two fix-related commits.
 
-To get started as a developer, clone the repository from GitHub, run `npm install` to pull dependencies, then run `npm run watch` to start both esbuild and the TypeScript compiler in watch mode for live development. The extension activates on `onStartupFinished`, so you can press F5 in VS Code to launch an Extension Development Host and test it immediately. Use `npm run compile` for a one-off build, `npm test` to run the test suite, and `npm run install-extension` (or the `-win` variant on Windows) to package and install the extension locally. The project also includes `CONTRIBUTING.md` and `CHANGELOG.md` documentation for onboarding contributors.
+To get started as a developer, clone the repository from GitHub, run `npm install` to pull dependencies, and then use `npm run watch` to start a development build with live recompilation via esbuild and TypeScript type-checking in watch mode. You can run the full test suite with `npm test` (which first compiles, runs compile-tests, and lints). To package and install the extension locally, run `npm run install-extension` (or `install-extension-win` on Windows), which invokes `vsce package` and installs the resulting `.vsix` into VS Code. Documentation is available in `README.md`, `CHANGELOG.md`, and `CONTRIBUTING.md`. The project is MIT-licensed.
 
 ---
 
@@ -25,7 +25,7 @@ To get started as a developer, clone the repository from GitHub, run `npm instal
 ## 🧩 VS Code Extension Details
 
 **Display Name:** Explain This Project
-**Version:** 0.3.0
+**Version:** 0.3.2
 **Publisher:** peterbenoit
 **VS Code Engine:** ^1.105.0
 
@@ -47,6 +47,7 @@ To get started as a developer, clone the repository from GitHub, run `npm instal
 |--------|---------|
 | `npm run vscode:prepublish` | npm run package |
 | `npm run compile` | npm run check-types && node esbuild.js |
+| `npm run compile-tests` | tsc -p ./ |
 | `npm run check-types` | tsc --noEmit |
 | `npm run watch` | npm-run-all -p watch:* |
 | `npm run watch:esbuild` | node esbuild.js --watch |
@@ -54,7 +55,7 @@ To get started as a developer, clone the repository from GitHub, run `npm instal
 | `npm run package` | npm run check-types && node esbuild.js --production |
 | `npm run install-extension` | vsce package && code --install-extension $(ls explain-this-project-*.vsix | sort -V | tail -1) |
 | `npm run install-extension-win` | vsce package && node -e "const fs=require('fs');const f=fs.readdirSync('.').filter(x=>x.endsWith('.vsix')).sort().pop();require('child_process').execSync('code --install-extension '+f,{stdio:'inherit'})" |
-| `npm run pretest` | npm run compile && npm run lint |
+| `npm run pretest` | npm run compile && npm run compile-tests && npm run lint |
 | `npm run lint` | eslint src |
 | `npm run test` | vscode-test |
 
@@ -160,16 +161,16 @@ Files changed most frequently:
 
 | File | Changes |
 |------|---------|
-| `package.json` | 26 |
-| `README.md` | 8 |
-| `src/extension.ts` | 7 |
+| `package.json` | 29 |
+| `README.md` | 11 |
+| `src/extension.ts` | 9 |
+| `.gitignore` | 6 |
+| `PROJECT_OVERVIEW.md` | 6 |
 | `src/runner/projectAnalysis.ts` | 6 |
-| `PROJECT_OVERVIEW.md` | 5 |
-| `.gitignore` | 5 |
+| `src/runner/gitAnalysis.ts` | 4 |
 | `src/runner/renderMarkdown.ts` | 4 |
 | `src/types/config.ts` | 4 |
 | `src/agent/llm.ts` | 4 |
-| `src/services/configurationService.ts` | 3 |
 
 ### 🐛 Bug Clusters
 
@@ -177,9 +178,11 @@ Files most often touched in fix/bug-related commits:
 
 | File | Fix Commits |
 |------|-------------|
-| `package.json` | 1 |
+| `CHANGELOG.md` | 2 |
+| `package.json` | 2 |
+| `src/runner/gitAnalysis.ts` | 2 |
+| `README.md` | 1 |
 | `src/extension.ts` | 1 |
-| `src/runner/gitAnalysis.ts` | 1 |
 | `src/runner/projectAnalysis.ts` | 1 |
 | `src/runner/renderMarkdown.ts` | 1 |
 | `src/services/configurationService.ts` | 1 |
@@ -188,13 +191,13 @@ Files most often touched in fix/bug-related commits:
 
 ### 📈 Commit Velocity
 
-**Average:** 3 commits/month 📉 decreasing
+**Average:** 3.7 commits/month 📉 decreasing
 
-**Trend (last 12 months):** ▁▁▁▁▁▁█▁▁▁▂▁
+**Trend (last 12 months):** ▁▁▁▁▁▁█▁▁▁▂▃
 
 ### 🚨 Revert/Hotfix Activity
 
 **1** revert/hotfix commit in the last 12 months
 
 ---
-*Generated by Explain This Project extension on 2026-04-09T14:01:25.951Z*
+*Generated by Explain This Project extension on 2026-04-09T19:51:27.103Z*

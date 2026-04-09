@@ -27,6 +27,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
 		try {
 			// Show progress indicator
+			let savedPath: string | null = null;
+			let overview: any = null;
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: "Analyzing project...",
@@ -38,7 +40,7 @@ export function activate(context: vscode.ExtensionContext): void {
 				progress.report({ increment: 10, message: "Scanning files and dependencies..." });
 				const config = vscode.workspace.getConfiguration('explainThisProject');
 				if (token.isCancellationRequested) { return; }
-				const overview = analyzeProject(root, {
+				overview = analyzeProject(root, {
 					includeDevDependencies: config.get('includeDevDependencies', true),
 					maxDirectoryDepth: config.get('maxDirectoryDepth', 3),
 					excludeDirectories: config.get<string[]>('excludeDirectories', []),
@@ -121,58 +123,49 @@ export function activate(context: vscode.ExtensionContext): void {
 							});
 							if (newUri) {
 								fs.writeFileSync(newUri.fsPath, markdownContent, "utf8");
-								progress.report({ increment: 100, message: "Complete!" });
-								const action = await vscode.window.showInformationMessage(
-									`Project overview saved as ${path.basename(newUri.fsPath)}`,
-									"Open File"
-								);
-								if (action === "Open File") {
-									const document = await vscode.workspace.openTextDocument(newUri);
-									await vscode.window.showTextDocument(document);
-								}
-							} else {
-								progress.report({ increment: 100, message: "Cancelled." });
+								savedPath = newUri.fsPath;
 							}
 							shouldWrite = false;
 							break;
 						case "Cancel":
 						default:
-							progress.report({ increment: 100, message: "Cancelled." });
+							// User cancelled
 							shouldWrite = false;
 					}
 				}
 
 				if (shouldWrite) {
 					fs.writeFileSync(overviewPath, markdownContent, "utf8");
-					progress.report({ increment: 100, message: "Complete!" });
-
-					// Show success message and offer to open the file
-					const action = await vscode.window.showInformationMessage(
-						`Project overview generated successfully in PROJECT_OVERVIEW.md`,
-						"Open File"
-					);
-
-					if (action === "Open File") {
-						const document = await vscode.workspace.openTextDocument(overviewPath);
-						await vscode.window.showTextDocument(document);
-					}
-
-					// Also show brief summary in output channel
-					outputChannel.clear();
-					outputChannel.appendLine("✅ PROJECT OVERVIEW GENERATED");
-					outputChannel.appendLine("────────────────────────────────────────");
-					outputChannel.appendLine(`📄 File: PROJECT_OVERVIEW.md`);
-					outputChannel.appendLine(`📁 Project: ${overview.projectName ?? "Unknown"}`);
-					outputChannel.appendLine(`🏷️  Type: ${overview.projectType ?? "Unknown"}`);
-					outputChannel.appendLine(`💻 Language: ${overview.primaryLanguage ?? "Unknown"}`);
-					if (overview.frameworks.length > 0) {
-						outputChannel.appendLine(`🔧 Frameworks: ${overview.frameworks.join(", ")}`);
-					}
-					outputChannel.appendLine("");
-					outputChannel.appendLine("Open PROJECT_OVERVIEW.md to see the full analysis.");
-
+					savedPath = overviewPath;
 				}
 			});
+
+			// Show success message AFTER progress closes
+			if (savedPath) {
+				const action = await vscode.window.showInformationMessage(
+					`Project overview generated successfully in ${path.basename(savedPath)}`,
+					"Open File"
+				);
+
+				if (action === "Open File") {
+					const document = await vscode.workspace.openTextDocument(savedPath);
+					await vscode.window.showTextDocument(document);
+				}
+
+				// Also show brief summary in output channel
+				outputChannel.clear();
+				outputChannel.appendLine("✅ PROJECT OVERVIEW GENERATED");
+				outputChannel.appendLine("────────────────────────────────────────");
+				outputChannel.appendLine(`📄 File: ${path.basename(savedPath)}`);
+				outputChannel.appendLine(`📁 Project: ${overview.projectName ?? "Unknown"}`);
+				outputChannel.appendLine(`🏷️  Type: ${overview.projectType ?? "Unknown"}`);
+				outputChannel.appendLine(`💻 Language: ${overview.primaryLanguage ?? "Unknown"}`);
+				if (overview.frameworks.length > 0) {
+					outputChannel.appendLine(`🔧 Frameworks: ${overview.frameworks.join(", ")}`);
+				}
+				outputChannel.appendLine("");
+				outputChannel.appendLine(`Open ${path.basename(savedPath)} to see the full analysis.`);
+			}
 
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
