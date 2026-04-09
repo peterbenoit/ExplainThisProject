@@ -18,7 +18,8 @@ export class ConfigurationService implements IConfigurationService {
 			maxDirectoryDepth: config.get('maxDirectoryDepth', 3),
 			excludeDirectories: config.get('excludeDirectories', []),
 			openaiApiKey: config.get('openaiApiKey', ''),
-			llmProvider: config.get('llmProvider', 'copilot')
+			llmProvider: config.get('llmProvider', 'copilot'),
+			includeGitAnalysis: config.get('includeGitAnalysis', true)
 		};
 	}
 

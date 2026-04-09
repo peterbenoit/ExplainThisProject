@@ -1,11 +1,13 @@
 import * as fs from "fs";
 import * as path from "path";
 import { ProjectOverview } from "../types";
+import { analyzeGitHistory } from "./gitAnalysis";
 
 export interface AnalysisOptions {
 	includeDevDependencies?: boolean;
 	maxDirectoryDepth?: number;
 	excludeDirectories?: string[];
+	includeGitAnalysis?: boolean;
 }
 
 export function analyzeProject(root: string, options: AnalysisOptions = {}): ProjectOverview {
@@ -384,6 +386,15 @@ export function analyzeProject(root: string, options: AnalysisOptions = {}): Pro
 		overview.structureSummary = [`${sourceDir}/`, ...treeLines];
 	} else {
 		overview.structureSummary = [];
+	}
+
+	// Git analysis (optional)
+	const includeGit = options.includeGitAnalysis !== false; // default true
+	if (includeGit) {
+		const gitAnalysis = analyzeGitHistory(root);
+		if (gitAnalysis) {
+			overview.gitAnalysis = gitAnalysis;
+		}
 	}
 
 	return overview;

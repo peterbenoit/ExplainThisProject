@@ -41,15 +41,14 @@ export function activate(context: vscode.ExtensionContext): void {
 				const overview = analyzeProject(root, {
 					includeDevDependencies: config.get('includeDevDependencies', true),
 					maxDirectoryDepth: config.get('maxDirectoryDepth', 3),
-					excludeDirectories: config.get<string[]>('excludeDirectories', [])
+					excludeDirectories: config.get<string[]>('excludeDirectories', []),
+					includeGitAnalysis: config.get('includeGitAnalysis', true)
 				});
-
 				if (token.isCancellationRequested) { return; }
 
-				// Generate markdown content
-				progress.report({ increment: 60, message: "Building overview document..." });
+				// Generate the static markdown content
+				progress.report({ increment: 50, message: "Rendering markdown..." });
 				const staticMarkdown = renderProjectOverview(overview);
-
 				if (token.isCancellationRequested) { return; }
 
 				// Attempt AI narrative summary via Copilot (best-effort)
@@ -118,8 +117,6 @@ export function activate(context: vscode.ExtensionContext): void {
 							break;
 						case "Cancel":
 						default:
-							shouldWrite = false;
-							break;
 					}
 				}
 
@@ -161,7 +158,6 @@ export function activate(context: vscode.ExtensionContext): void {
 			vscode.window.showErrorMessage(`Failed to generate project overview: ${errorMessage}`);
 		}
 	};
-
 	// Register the main command
 	const disposable1 = vscode.commands.registerCommand(
 		"explain-this-project.explainProject",

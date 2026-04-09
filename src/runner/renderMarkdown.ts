@@ -224,6 +224,70 @@ export function renderProjectOverview(overview: ProjectOverview): string {
 		}
 	}
 
+	// Git Insights
+	if (overview.gitAnalysis) {
+		const git = overview.gitAnalysis;
+		lines.push("## 🔀 Git Insights");
+		lines.push("");
+		lines.push("*Analyzing the last 12 months of commit history*");
+		lines.push("");
+
+		// Churn hotspots
+		if (git.churnHotspots.length > 0) {
+			lines.push("### 🔥 Churn Hotspots");
+			lines.push("");
+			lines.push("Files changed most frequently:");
+			lines.push("");
+			lines.push("| File | Changes |");
+			lines.push("|------|---------|");
+			git.churnHotspots.forEach(item => {
+				lines.push(`| \`${item.file}\` | ${item.changes} |`);
+			});
+			lines.push("");
+		}
+
+		// Bug clusters
+		if (git.bugClusters.length > 0) {
+			lines.push("### 🐛 Bug Clusters");
+			lines.push("");
+			lines.push("Files most often touched in fix/bug-related commits:");
+			lines.push("");
+			lines.push("| File | Fix Commits |");
+			lines.push("|------|-------------|");
+			git.bugClusters.forEach(item => {
+				lines.push(`| \`${item.file}\` | ${item.fixes} |`);
+			});
+			lines.push("");
+		}
+
+		// Top contributors
+		if (git.topContributors.length > 0) {
+			lines.push("### 👥 Top Contributors (Last 12 Months)");
+			lines.push("");
+			git.topContributors.forEach(item => {
+				lines.push(`- ${item.name} (${item.commits} commits)`);
+			});
+			lines.push("");
+		}
+
+		// Commit velocity
+		lines.push("### 📈 Commit Velocity");
+		lines.push("");
+		const trendEmoji = git.commitVelocity.trend === 'increasing' ? '📈' :
+			git.commitVelocity.trend === 'decreasing' ? '📉' : '➡️';
+		lines.push(`**Average:** ${git.commitVelocity.averagePerMonth} commits/month ${trendEmoji} ${git.commitVelocity.trend}`);
+		lines.push("");
+		lines.push(`**Trend (last 12 months):** ${git.commitVelocity.sparkline}`);
+		lines.push("");
+
+		// Revert/hotfix count
+		lines.push("### 🚨 Revert/Hotfix Activity");
+		lines.push("");
+		const revertLabel = git.revertCount === 1 ? 'commit' : 'commits';
+		lines.push(`**${git.revertCount}** revert/hotfix ${revertLabel} in the last 12 months`);
+		lines.push("");
+	}
+
 	// Notes
 	if (overview.notes.length > 0) {
 		lines.push("## 📝 Notes");

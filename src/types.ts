@@ -1,3 +1,15 @@
+export interface GitAnalysis {
+	churnHotspots: { file: string; changes: number }[];
+	bugClusters: { file: string; fixes: number }[];
+	topContributors: { name: string; commits: number }[];
+	commitVelocity: {
+		sparkline: string;
+		averagePerMonth: number;
+		trend: 'increasing' | 'decreasing' | 'stable';
+	};
+	revertCount: number;
+}
+
 export interface ProjectOverview {
 	projectName: string | null;
 	projectType: string | null;
@@ -28,6 +40,7 @@ export interface ProjectOverview {
 		url: string;
 		type: string;
 	};
+	gitAnalysis?: GitAnalysis;
 	license: string | null;
 	author: string | null;
 	notes: string[];

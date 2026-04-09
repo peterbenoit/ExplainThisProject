@@ -4,6 +4,7 @@ export interface ExplainThisProjectConfig {
 	excludeDirectories: string[];
 	openaiApiKey: string;
 	llmProvider: LLMProviderType;
+	includeGitAnalysis: boolean;
 }
 
 export type LLMProviderType = 'copilot' | 'openai' | 'claude' | 'anthropic';
