@@ -9,16 +9,12 @@ import { GitAnalysis } from '../types';
  */
 export function analyzeGitHistory(rootPath: string): GitAnalysis | undefined {
 	try {
-		// Check if .git directory exists
-		const gitDir = path.join(rootPath, '.git');
-		if (!fs.existsSync(gitDir)) {
-			return undefined;
-		}
-
-		// Test git availability
+		// Test if this is a git repository by trying a git command
+		// (works for CodeCommit, standard git repos, etc.)
 		try {
-			runGit(['--version'], rootPath);
+			runGit(['rev-parse', '--git-dir'], rootPath);
 		} catch {
+			// Not a git repo or git not available
 			return undefined;
 		}
 

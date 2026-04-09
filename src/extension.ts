@@ -121,6 +121,7 @@ export function activate(context: vscode.ExtensionContext): void {
 							});
 							if (newUri) {
 								fs.writeFileSync(newUri.fsPath, markdownContent, "utf8");
+								progress.report({ increment: 100, message: "Complete!" });
 								const action = await vscode.window.showInformationMessage(
 									`Project overview saved as ${path.basename(newUri.fsPath)}`,
 									"Open File"
@@ -129,11 +130,15 @@ export function activate(context: vscode.ExtensionContext): void {
 									const document = await vscode.workspace.openTextDocument(newUri);
 									await vscode.window.showTextDocument(document);
 								}
+							} else {
+								progress.report({ increment: 100, message: "Cancelled." });
 							}
 							shouldWrite = false;
 							break;
 						case "Cancel":
 						default:
+							progress.report({ increment: 100, message: "Cancelled." });
+							shouldWrite = false;
 					}
 				}
 
@@ -165,8 +170,7 @@ export function activate(context: vscode.ExtensionContext): void {
 					}
 					outputChannel.appendLine("");
 					outputChannel.appendLine("Open PROJECT_OVERVIEW.md to see the full analysis.");
-				} else {
-					progress.report({ increment: 100, message: "Cancelled." });
+
 				}
 			});
 
