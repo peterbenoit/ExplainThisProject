@@ -2,13 +2,13 @@
 
 ## 🤖 AI Summary
 
-**Explain This Project** is a VS Code extension created by Peter Benoit that analyzes a project's structure and automatically generates a comprehensive `PROJECT_OVERVIEW.md` file. The generated overview covers details about the project's languages, frameworks, dependencies, and architecture. It exposes three commands: one to generate the overview, one to force-overwrite an existing overview, and an "Ask Questions" command that likely allows interactive querying about the project. The extension activates on startup (`onStartupFinished`) and is currently at version 0.2.5, targeting VS Code engine `^1.105.0`.
+**Explain This Project** is a VS Code extension (v0.3.0) created by Peter Benoit that analyzes a project's structure and automatically generates a comprehensive `PROJECT_OVERVIEW.md` file. The generated overview covers details about the project's languages, frameworks, dependencies, and architecture. It exposes three commands: one to generate the overview, one to force-overwrite an existing overview, and an "Ask Questions" command that allows interactive querying about the project. The extension activates on startup (`onStartupFinished`) and is published under the MIT license.
 
-The project is written in TypeScript and uses **ESBuild** as its bundler, which is typical for VS Code extensions that need fast, lightweight builds. Linting is handled by **ESLint** (with `@typescript-eslint` parser and plugin), and testing uses the official `@vscode/test-cli` and `@vscode/test-electron` packages. The only production dependency is the **openai** package, indicating the extension leverages OpenAI's API (likely for LLM-powered analysis and the "Ask Questions" feature). The project is licensed under MIT.
+The project is written in TypeScript, targets VS Code engine `^1.105.0`, and uses **esbuild** as its bundler rather than webpack—a choice that favors faster build times. Type checking is handled separately via `tsc --noEmit`, and the development workflow supports parallel watching of both esbuild and TypeScript type checks through `npm-run-all`. Linting is provided by ESLint with the `@typescript-eslint` parser and plugin, and testing leverages the official `@vscode/test-cli` and `@vscode/test-electron` packages for running extension integration tests.
 
-The source code is organized into a clean, layered architecture under `src/`. An `agent/` directory contains `agentLoop.ts` and `llm.ts`, which likely manage the interaction loop and LLM communication with OpenAI. A `runner/` directory handles file system access, project analysis logic, and markdown rendering. The `services/` layer includes an `agentOrchestrator.ts` (coordinating the agent workflow), `configurationService.ts`, `projectOverviewService.ts`, and `userInterfaceService.ts`, suggesting a well-separated concerns pattern where orchestration, configuration, core logic, and UI interactions are decoupled. Shared types and error handling are split across `types/`, `utils/`, and root-level modules. This structure reflects a service-oriented architecture that would be straightforward to extend or test independently.
+The sole production dependency is the **openai** npm package, which indicates the extension uses OpenAI's API (likely via an LLM) to power its project analysis and question-answering capabilities. The source structure reflects this clearly: the `agent/` directory contains `agentLoop.ts` and `llm.ts` for managing LLM interactions, while the `runner/` directory handles file system access, project analysis logic, and Markdown rendering. A `services/` layer orchestrates these concerns through dedicated modules—`agentOrchestrator.ts` coordinates the agent, `configurationService.ts` manages settings, `projectOverviewService.ts` drives the overview generation, and `userInterfaceService.ts` handles VS Code UI interactions. Error handling and type definitions are organized into their own `types/` and `utils/` directories, showing a clean separation of concerns.
 
-To get started as a developer, clone the repository from GitHub, run `npm install` to pull dependencies, and then run `npm run watch` to start a development build with live reloading (using `npm-run-all` to watch both esbuild and TypeScript type-checking in parallel). Running `npm run compile` performs a one-shot build, and `npm test` runs the extension test suite. To package and install the extension locally, use `npm run install-extension`, which calls `vsce package` and installs the resulting `.vsix` file into VS Code. Additional documentation is available in `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `vsc-extension-quickstart.md`.
+To get started as a developer, clone the repository from GitHub, run `npm install` to pull in dependencies, and then use `npm run watch` to start a parallel development build with live esbuild bundling and TypeScript type checking. From there, you can press F5 in VS Code to launch an Extension Development Host for testing. To produce a distributable `.vsix` package, run `vsce package`, or use the convenience script `npm run install-extension` which packages and installs the extension locally in one step. The project includes `README.md`, `CHANGELOG.md`, and `CONTRIBUTING.md` for further guidance.
 
 ---
 
@@ -25,7 +25,7 @@ To get started as a developer, clone the repository from GitHub, run `npm instal
 ## 🧩 VS Code Extension Details
 
 **Display Name:** Explain This Project
-**Version:** 0.2.5
+**Version:** 0.3.0
 **Publisher:** peterbenoit
 **VS Code Engine:** ^1.105.0
 
@@ -100,7 +100,6 @@ vsce package
 - `README.md`
 - `CHANGELOG.md`
 - `CONTRIBUTING.md`
-- `vsc-extension-quickstart.md`
 
 ## 📁 Source Structure
 
@@ -149,4 +148,4 @@ src/
 - typescript
 
 ---
-*Generated by Explain This Project extension on 2026-03-26T18:10:13.207Z*
+*Generated by Explain This Project extension on 2026-04-09T13:43:42.530Z*
