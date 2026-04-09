@@ -5,14 +5,18 @@ import { GitAnalysis } from '../types';
  * Analyzes git history to identify hotspots, contributors, and trends.
  * Returns undefined if the project is not a git repository or git is unavailable.
  */
-export function analyzeGitHistory(rootPath: string): GitAnalysis | undefined {
+export function analyzeGitHistory(rootPath: string, outputLog?: (msg: string) => void): GitAnalysis | undefined {
+	const log = outputLog || (() => { });
 	try {
 		// Test if this is a git repository by trying a git command
 		// (works for CodeCommit, standard git repos, etc.)
 		try {
-			runGit(['rev-parse', '--git-dir'], rootPath);
-		} catch {
+			const gitDirTest = runGit(['rev-parse', '--git-dir'], rootPath);
+			log(`✅ Git repository detected: ${gitDirTest.trim()}`);
+		} catch (error) {
 			// Not a git repo or git not available
+			const errMsg = error instanceof Error ? error.message : String(error);
+			log(`❌ Git detection failed: ${errMsg}`);
 			return undefined;
 		}
 
@@ -116,7 +120,9 @@ export function analyzeGitHistory(rootPath: string): GitAnalysis | undefined {
 			revertCount
 		};
 	} catch (error) {
-		// Silently fail - git analysis is optional
+		// Log error for diagnostics, but don't throw - git analysis is optional
+		const errMsg = error instanceof Error ? error.message : String(error);
+		log(`⚠️ Git analysis error: ${errMsg}`);
 		return undefined;
 	}
 }

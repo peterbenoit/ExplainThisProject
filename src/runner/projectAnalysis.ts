@@ -8,6 +8,7 @@ export interface AnalysisOptions {
 	maxDirectoryDepth?: number;
 	excludeDirectories?: string[];
 	includeGitAnalysis?: boolean;
+	gitLogCallback?: (message: string) => void;
 }
 
 export function analyzeProject(root: string, options: AnalysisOptions = {}): ProjectOverview {
@@ -391,7 +392,7 @@ export function analyzeProject(root: string, options: AnalysisOptions = {}): Pro
 	// Git analysis (optional)
 	const includeGit = options.includeGitAnalysis !== false; // default true
 	if (includeGit) {
-		const gitAnalysis = analyzeGitHistory(root);
+		const gitAnalysis = analyzeGitHistory(root, options.gitLogCallback);
 		if (gitAnalysis) {
 			overview.gitAnalysis = gitAnalysis;
 		}

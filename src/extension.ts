@@ -44,7 +44,8 @@ export function activate(context: vscode.ExtensionContext): void {
 					includeDevDependencies: config.get('includeDevDependencies', true),
 					maxDirectoryDepth: config.get('maxDirectoryDepth', 3),
 					excludeDirectories: config.get<string[]>('excludeDirectories', []),
-					includeGitAnalysis: config.get('includeGitAnalysis', true)
+					includeGitAnalysis: config.get('includeGitAnalysis', true),
+					gitLogCallback: (msg: string) => outputChannel.appendLine(`   ${msg}`)
 				});
 				if (token.isCancellationRequested) { return; }
 
@@ -60,8 +61,7 @@ export function activate(context: vscode.ExtensionContext): void {
 					outputChannel.appendLine(`   Contributors: ${overview.gitAnalysis.topContributors.length}`);
 					outputChannel.appendLine(`   Avg commits/month: ${overview.gitAnalysis.commitVelocity.averagePerMonth}`);
 				} else {
-					outputChannel.appendLine(`⚠️ Git insights not available`);
-					outputChannel.appendLine(`   (not a git repo, git not on PATH, or git commands failed)`);
+					outputChannel.appendLine(`⚠️ Git insights not available (see details above)`);
 				}
 				outputChannel.show(true);
 
@@ -140,8 +140,9 @@ export function activate(context: vscode.ExtensionContext): void {
 				}
 			});
 
-			// Show success message AFTER progress closes
+			// Small delay to let progress toast dismiss before showing success dialog
 			if (savedPath) {
+				await new Promise(resolve => setTimeout(resolve, 300));
 				const action = await vscode.window.showInformationMessage(
 					`Project overview generated successfully in ${path.basename(savedPath)}`,
 					"Open File"
