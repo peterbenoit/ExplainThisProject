@@ -119,6 +119,7 @@
 	"scripts": {
 		"vscode:prepublish": "npm run package",
 		"compile": "npm run check-types && node esbuild.js",
+		"compile-tests": "tsc -p ./",
 		"check-types": "tsc --noEmit",
 		"watch": "npm-run-all -p watch:*",
 		"watch:esbuild": "node esbuild.js --watch",
@@ -126,7 +127,7 @@
 		"package": "npm run check-types && node esbuild.js --production",
 		"install-extension": "vsce package && code --install-extension $(ls explain-this-project-*.vsix | sort -V | tail -1)",
 		"install-extension-win": "vsce package && node -e \"const fs=require('fs');const f=fs.readdirSync('.').filter(x=>x.endsWith('.vsix')).sort().pop();require('child_process').execSync('code --install-extension '+f,{stdio:'inherit'})\"",
-		"pretest": "npm run compile && npm run lint",
+		"pretest": "npm run compile && npm run compile-tests && npm run lint",
 		"lint": "eslint src",
 		"test": "vscode-test"
 	},

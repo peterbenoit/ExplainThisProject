@@ -14,7 +14,6 @@ yarn-error.log*
 
 # VS Code
 .vscode-test/
-.vscode-test.mjs
 *.code-workspace
 
 # Runtime data
@@ -83,3 +82,4 @@ package-lock.json
 
 # Development notes
 e*.md
+h*.md
