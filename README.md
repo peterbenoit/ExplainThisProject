@@ -1,191 +1,308 @@
 # Explain This Project
 
-**Instantly understand any codebase.**
+**Make sense of any codebase in seconds.**
 
-Open an unfamiliar project and run one command. The extension scans your workspace, analyzes its structure and dependencies, and writes a `PROJECT_OVERVIEW.md` to your project root — with an optional AI-generated narrative summary powered by GitHub Copilot.
-
----
-
-## Features
-
-- **Static project analysis** — detects language, frameworks, entry points, and directory structure entirely offline
-- **AI narrative summary** — prepends a plain-English summary to the overview using GitHub Copilot (no API key required) or OpenAI
-- **Ask Questions agent** — interactive Q&A session grounded in your project overview
-- **Multi-language support** — JavaScript/TypeScript, Python, Rust, Go, PHP, Java, C#, C++, and more
-- **Fully configurable** — control depth, excluded directories, AI timeout, and LLM provider
+Ever opened a project and felt lost? This extension helps you understand any code project instantly. Just run one command and get a clear, comprehensive overview of what you're looking at.
 
 ---
 
-## Commands
+## What Does It Do?
 
-All commands are available via the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`) under **Project Analysis**.
+**Explain This Project** creates a friendly overview document that tells you everything you need to know about a project:
 
-| Command | Description |
-|---------|-------------|
-| `Explain This Project` | Runs analysis and writes `PROJECT_OVERVIEW.md`. Prompts before overwriting an existing file. |
-| `Explain This Project (Force Overwrite)` | Same as above, silently overwrites any existing file. |
-| `Explain This Project: Ask Questions` | Opens an interactive Q&A session about your project powered by an LLM. |
-
-The progress notification for the first two commands is cancellable — clicking **Cancel** skips the AI summary and writes the static analysis immediately.
+- **What kind of project it is** — web app, library, API, etc.
+- **What technologies it uses** — React, Python, TypeScript, and more
+- **How the files are organized** — see the folder structure at a glance
+- **Plain-English summary** — AI-powered explanation of what the project does
+- **Git insights** *(NEW!)* — see which files change most often, who the top contributors are, and where bugs tend to happen
+- **Ask Questions** — chat with AI about the project to learn more
 
 ---
 
-## Installation
+## Key Features
 
-### From VS Code Marketplace
-1. Open VS Code
-2. Go to Extensions (`Ctrl+Shift+X` / `Cmd+Shift+X`)
-3. Search for **"Explain This Project"**
-4. Click **Install**
+### Complete Project Analysis (Works Offline!)
+The extension scans your project automatically to find:
+- Programming languages and frameworks
+- Main entry points and configuration files
+- Directory structure and file organization
+- Dependencies and packages
 
-### From VSIX File
-```bash
-code --install-extension explain-this-project-0.2.5.vsix
-```
+### Git History Insights *(NEW in v0.3!)*
+For projects using Git, you'll also get:
+- **Churn Hotspots** — files that change most frequently (might need refactoring!)
+- **Bug Clusters** — files with the most bug fixes (watch out for these!)
+- **Top Contributors** — who's been working on the project recently
+- **Commit Activity** — visual chart showing project momentum
+- **Stability Metrics** — count of reverts and emergency fixes
+
+### AI-Powered Understanding
+Get a plain-English summary of what the project does, written by GitHub Copilot or OpenAI. No technical jargon required!
+
+### Interactive Q&A
+Not sure about something? Ask questions in natural language and get instant answers based on your project.
+
+### Multi-Language Support
+Works with JavaScript, TypeScript, Python, Rust, Go, PHP, Java, C#, C++, and many more!
 
 ---
 
 ## How to Use
 
-1. **Open any project folder** in VS Code
-2. Open the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
-3. Run **`Explain This Project`**
-4. A `PROJECT_OVERVIEW.md` file appears in your project root
+Using the extension is super simple:
 
-### Example Output
+1. **Open a project folder** in VS Code (any project works!)
+2. **Press `Cmd+Shift+P`** on Mac or `Ctrl+Shift+P` on Windows/Linux
+3. **Type "Explain This Project"** and press Enter
+4. **Wait a few seconds** while it analyzes everything
+5. **Check your project root** — you'll find a new `PROJECT_OVERVIEW.md` file
+
+That's it! Open the file to see a complete breakdown of your project.
+
+### Available Commands
+
+| Command | What It Does |
+|---------|-------------|
+| **Explain This Project** | Creates the overview file. Asks before replacing an existing one. |
+| **Explain This Project (Force Overwrite)** | Creates the overview file without asking (replaces any existing file). |
+| **Ask Questions** | Opens an interactive chat where you can ask anything about your project. |
+
+💡 **Tip:** If the AI summary is taking too long, just click "Cancel" in the progress notification. You'll still get the complete analysis, just without the AI-generated summary at the top.
+
+---
+
+## Installation
+
+### Option 1: VS Code Marketplace (Easiest)
+1. Open VS Code
+2. Click the Extensions icon on the left sidebar (or press `Ctrl+Shift+X` / `Cmd+Shift+X`)
+3. Search for **"Explain This Project"**
+4. Click the **Install** button
+
+### Option 2: Install from File
+If you have a `.vsix` file, open a terminal and run:
+```bash
+code --install-extension explain-this-project-[VERSION].vsix
+```
+
+---
+
+## Example Output
+
+Here's what a typical `PROJECT_OVERVIEW.md` looks like:
 
 ```markdown
 # Project Overview
 
-## 🤖 AI Summary
+## AI Summary
 
-This is a server-rendered web application built with Next.js and TypeScript...
-[3–5 paragraph narrative generated by Copilot]
+This is a modern web application built with React and TypeScript.
+It uses Next.js for server-side rendering and includes a REST API
+powered by Express. The project follows best practices with ESLint
+for code quality and has a comprehensive test suite...
 
 ---
 
 ## Basic Information
 
-**Name:** my-react-app
-**Type:** Application (Build-enabled)
+**Name:** my-awesome-app
+**Type:** Web Application
 **Primary Language:** TypeScript
+
+## Git Activity (Last 12 Months)
+
+**Churn Hotspots** (files that change most):
+- src/api/users.ts (47 changes)
+- src/components/Dashboard.tsx (32 changes)
+- src/utils/helpers.ts (28 changes)
+
+**Top Contributors:**
+- Sarah Johnson (143 commits)
+- Mike Chen (98 commits)
+- Alex Rivera (76 commits)
+
+**Commit Activity:** ▁▂▃▅▆█▇▆▅▄▃▂ (trending up!)
 
 ## Frameworks & Libraries
 
-- React 18
-- Express
+- React 18.2
+- Next.js 14
+- Express 4.18
 
 ## Entry Points
 
-- `src/index.ts`
-- `src/server.ts`
+- `pages/index.tsx`
+- `server/index.ts`
 
-## 📁 Source Structure
+## 📁 Directory Structure
 
 ```
 src/
-├── index.ts
-├── server.ts
 ├── components/
 │   ├── Header.tsx
-│   └── Footer.tsx
+│   └── Dashboard.tsx
+├── api/
+│   └── users.ts
 └── utils/
     └── helpers.ts
 ```
 
 ## Dependencies
 
-- react, react-dom, express, ...
+react, next, express, typescript...
 
 ---
 *Generated by Explain This Project*
 ```
 
-The AI Summary section is omitted if Copilot is unavailable, the request times out, or you cancel.
+The AI Summary section only appears if you have GitHub Copilot or OpenAI configured. If not, you'll still get all the other great analysis!
 
 ---
 
-## AI Features
+## 🤖 Understanding the AI Features
 
-### Summary in PROJECT_OVERVIEW.md
+### AI Summary in Your Overview
 
-When you run the analysis, the extension sends the generated markdown overview to GitHub Copilot (or OpenAI) and prepends a narrative summary. Your raw source code is never transmitted — only the structured overview text.
+When you run the analysis, the extension can add a friendly summary at the top that explains what your project does in plain English.
 
-The summary times out after `aiSummaryTimeoutSeconds` (default: 30s). If it times out or you cancel, the static document is written without it.
+**What gets sent to AI?**
+Only the structured overview text (file names, dependencies, structure). Your actual source code is never transmitted.
 
-### Ask Questions
+**What if it takes too long?**
+The summary request times out after 30 seconds by default. If that happens, or if you click "Cancel," you'll still get the complete analysis — just without the AI summary at the top.
 
-Loads your `PROJECT_OVERVIEW.md` as context and lets you ask natural-language questions about the project in a multi-turn conversation. Type `exit` to end the session.
+### Ask Questions Feature
 
-Requires a GitHub Copilot subscription (`llmProvider: "copilot"`, default) or an OpenAI API key (`llmProvider: "openai"`).
+After generating an overview, you can run the "Ask Questions" command to start an interactive conversation. Examples:
+- "What does this project do?"
+- "Where should I start reading the code?"
+- "Which files handle authentication?"
+- "How do I run this project?"
+
+Type "exit" when you're done chatting.
+
+**Requirements:** You need either a GitHub Copilot subscription (default) or an OpenAI API key.
 
 ---
 
-## Configuration
+## ⚙️ Settings & Customization
+
+You can customize how the extension works through VS Code settings. Go to **Settings** (`Cmd+,` / `Ctrl+,`) and search for "Explain This Project".
+
+### Quick Settings Guide
+
+| Setting | What It Controls | Default |
+|---------|------------------|---------|
+| **LLM Provider** | Which AI service to use (`copilot` or `openai`) | `copilot` |
+| **OpenAI API Key** | Your OpenAI key (only needed if you choose `openai`) | Empty |
+| **AI Timeout** | How long to wait for AI summary (5-120 seconds) | 30 seconds |
+| **Include Dev Dependencies** | Whether to list development tools in the analysis | Yes |
+| **Max Directory Depth** | How deep to scan folders (1-10 levels) | 3 levels |
+| **Exclude Directories** | Folders to skip (saves time on large projects) | `node_modules`, `.git`, `dist`, `build`, `coverage` |
+
+### Example Configuration
+
+Here's a sample settings configuration:
 
 ```json
 {
   "explainThisProject.llmProvider": "copilot",
-  "explainThisProject.openaiApiKey": "",
   "explainThisProject.aiSummaryTimeoutSeconds": 30,
   "explainThisProject.includeDevDependencies": true,
   "explainThisProject.maxDirectoryDepth": 3,
   "explainThisProject.excludeDirectories": [
-    "node_modules", ".git", "dist", "build", "coverage"
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    "coverage"
   ]
 }
 ```
 
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| `llmProvider` | `"copilot"` \| `"openai"` | `"copilot"` | LLM backend for AI summary and Ask Questions |
-| `openaiApiKey` | string | `""` | Required only when `llmProvider` is `"openai"` |
-| `aiSummaryTimeoutSeconds` | number (5–120) | `30` | Max seconds to wait for the AI summary before skipping it |
-| `includeDevDependencies` | boolean | `true` | Include dev dependencies in the analysis |
-| `maxDirectoryDepth` | number (1–10) | `3` | Maximum directory depth to walk |
-| `excludeDirectories` | string[] | see above | Directory names to skip during analysis |
+💡 **Tip for Large Projects:** If analysis is slow, try reducing `maxDirectoryDepth` to `2` or adding more folders to `excludeDirectories`.
 
 ---
 
-## Language Support
+## Supported Languages & Technologies
 
-| Language | Analysis Method | Detected Frameworks |
-|----------|----------------|-------------------|
-| JavaScript / TypeScript | `package.json` | React, Vue, Next.js, Express, NestJS, Vite, and more |
-| Python | `requirements.txt`, `pyproject.toml` | Django, Flask, FastAPI |
-| Rust | `Cargo.toml` | Application vs. library |
-| Go | `go.mod` | Module name and dependencies |
-| PHP | `composer.json` | Laravel, Symfony, CakePHP |
-| Java, C#, C++, C | File extension scan | — |
+The extension recognizes a wide variety of programming languages and can identify popular frameworks automatically:
+
+| Language | What It Detects | Frameworks It Recognizes |
+|----------|----------------|-------------------------|
+| **JavaScript / TypeScript** | Dependencies from `package.json` | React, Vue, Angular, Next.js, Express, NestJS, Vite, and many more |
+| **Python** | Packages from `requirements.txt` or `pyproject.toml` | Django, Flask, FastAPI |
+| **Rust** | Crate info from `Cargo.toml` | Application vs. library detection |
+| **Go** | Module info from `go.mod` | Module name and dependencies |
+| **PHP** | Packages from `composer.json` | Laravel, Symfony, CakePHP |
+| **Java, C#, C++, C** | Files by extension | General analysis |
+
+**Don't see your language?** The extension still works! It might not detect specific frameworks, but it will show you the file structure and basic project info.
 
 ---
 
 ## Requirements
 
-- VS Code 1.105.0 or higher
-- An open workspace folder
-- GitHub Copilot subscription for AI features when using the default `"copilot"` provider (static analysis works fully offline without any account)
+- **VS Code version 1.105.0 or higher**
+- **An open workspace folder** (File → Open Folder)
+- **Optional:** GitHub Copilot subscription for AI features (analysis works without it!)
+- **Optional:** Git installed to get the git history insights
 
 ---
 
 ## Troubleshooting
 
-**Command doesn't appear in the palette** — Ensure a *folder* is open (File → Open Folder), not just a single file.
+**Can't find the command in the Command Palette?**
+Make sure you have a *folder* open, not just a single file. Go to **File → Open Folder** and select your project folder.
 
-**AI Summary is missing from the output** — Expected when Copilot is unavailable, the request timed out, or you clicked Cancel. The static analysis is always written regardless.
+**No AI Summary in the output?**
+This is normal if:
+- You don't have GitHub Copilot enabled
+- The request took longer than 30 seconds
+- You clicked "Cancel" during analysis
+- Your workspace is offline
 
-**Slow analysis on large projects** — Lower `maxDirectoryDepth` and add build artifact directories to `excludeDirectories`.
+The full analysis is still generated — just without the AI summary at the top!
 
-For more detail, see [DOCS.md](DOCS.md).
+**The extension is slow on my project**
+Try these fixes:
+- Lower the **Max Directory Depth** setting to `2` or `1`
+- Add build folders to **Exclude Directories** (like `dist`, `build`, `.next`)
+- Make sure `node_modules` and `.git` are excluded
+
+**Git insights aren't showing up**
+This happens when:
+- Your project isn't a Git repository
+- Git isn't installed on your computer
+- You're in a non-root folder of the repository
+
+This is totally fine — the extension will just skip the git analysis and show everything else!
 
 ---
 
-## Contributing
+## About the Author
 
-Check out the [Contributing Guide](CONTRIBUTING.md) for information on building, testing, and publishing.
+**Explain This Project** is created and maintained by [Peter Benoit](https://www.peterbenoit.com).
+
+If you find this extension helpful, consider:
+- Starring the [GitHub repository](https://github.com/peterbenoit/explain-this-project)
+- Writing a review on the VS Code Marketplace
+- Reporting issues or suggesting features on GitHub
+
+Want to contribute? Check out the [Contributing Guide](CONTRIBUTING.md)!
 
 ---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License — See [LICENSE](LICENSE) for details.
+
+---
+
+## Links
+
+- **Author Website:** [peterbenoit.com](https://www.peterbenoit.com/vscode/explain-this-project)
+- **GitHub Repository:** [github.com/peterbenoit/explain-this-project](https://github.com/peterbenoit/explain-this-project)
+- **Report Issues:** [GitHub Issues](https://github.com/peterbenoit/explain-this-project/issues)
+- **VS Code Marketplace:** [marketplace.visualstudio.com](https://marketplace.visualstudio.com/items?itemName=peterbenoit.explain-this-project)
+
