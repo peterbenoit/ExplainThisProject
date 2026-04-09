@@ -136,7 +136,7 @@ for code quality and has a comprehensive test suite...
 
 ## 📁 Directory Structure
 
-```
+
 src/
 ├── components/
 │   ├── Header.tsx
@@ -145,7 +145,7 @@ src/
 │   └── users.ts
 └── utils/
     └── helpers.ts
-```
+
 
 ## Dependencies
 
