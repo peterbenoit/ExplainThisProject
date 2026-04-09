@@ -46,6 +46,23 @@ export function activate(context: vscode.ExtensionContext): void {
 				});
 				if (token.isCancellationRequested) { return; }
 
+				// Log git analysis result for diagnostics
+				outputChannel.clear();
+				outputChannel.appendLine("🔍 ANALYSIS DIAGNOSTICS");
+				outputChannel.appendLine("────────────────────────────────────────");
+				outputChannel.appendLine(`📁 Root: ${root}`);
+				if (overview.gitAnalysis) {
+					outputChannel.appendLine(`✅ Git insights gathered:`);
+					outputChannel.appendLine(`   Churn hotspots: ${overview.gitAnalysis.churnHotspots.length}`);
+					outputChannel.appendLine(`   Bug clusters: ${overview.gitAnalysis.bugClusters.length}`);
+					outputChannel.appendLine(`   Contributors: ${overview.gitAnalysis.topContributors.length}`);
+					outputChannel.appendLine(`   Avg commits/month: ${overview.gitAnalysis.commitVelocity.averagePerMonth}`);
+				} else {
+					outputChannel.appendLine(`⚠️ Git insights not available`);
+					outputChannel.appendLine(`   (not a git repo, git not on PATH, or git commands failed)`);
+				}
+				outputChannel.show(true);
+
 				// Generate the static markdown content
 				progress.report({ increment: 50, message: "Rendering markdown..." });
 				const staticMarkdown = renderProjectOverview(overview);

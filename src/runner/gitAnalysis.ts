@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { spawnSync } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import { GitAnalysis } from '../types';
@@ -129,16 +129,21 @@ export function analyzeGitHistory(rootPath: string): GitAnalysis | undefined {
 
 /**
  * Runs a git command and returns stdout as a string.
+ * Uses spawnSync to pass args directly to the OS, avoiding shell splitting
+ * of arguments that contain spaces (e.g. '--since=1 year ago').
  * Throws on error.
  */
 function runGit(args: string[], cwd: string): string {
-	const result = execSync(`git ${args.join(' ')}`, {
+	const result = spawnSync('git', args, {
 		cwd,
 		encoding: 'utf8',
 		timeout: 10000,
-		stdio: ['pipe', 'pipe', 'pipe']
 	});
-	return result.toString();
+	if (result.error) { throw result.error; }
+	if (result.status !== 0) {
+		throw new Error(`git exited with code ${result.status}: ${result.stderr}`);
+	}
+	return result.stdout || '';
 }
 
 /**

@@ -2,13 +2,13 @@
 
 ## 🤖 AI Summary
 
-**Explain This Project** is a VS Code extension (v0.3.0) created by Peter Benoit that analyzes a project's structure and automatically generates a comprehensive `PROJECT_OVERVIEW.md` file. The generated overview covers details about the project's languages, frameworks, dependencies, and architecture. It exposes three commands: one to generate the overview, one to force-overwrite an existing overview, and an "Ask Questions" command that allows interactive querying about the project. The extension activates on startup (`onStartupFinished`) and is published under the MIT license.
+**Explain This Project** is a VS Code extension created by Peter Benoit that analyzes a project's structure and automatically generates a comprehensive `PROJECT_OVERVIEW.md` file. The generated overview captures details about the project's languages, frameworks, dependencies, and architecture. It exposes three commands: one to generate the overview, one to force-overwrite an existing overview, and an "Ask Questions" command that leverages an LLM-powered agent to let developers interrogate their project interactively. The extension is currently at version 0.3.0 and is licensed under MIT.
 
-The project is written in TypeScript, targets VS Code engine `^1.105.0`, and uses **esbuild** as its bundler rather than webpack—a choice that favors faster build times. Type checking is handled separately via `tsc --noEmit`, and the development workflow supports parallel watching of both esbuild and TypeScript type checks through `npm-run-all`. Linting is provided by ESLint with the `@typescript-eslint` parser and plugin, and testing leverages the official `@vscode/test-cli` and `@vscode/test-electron` packages for running extension integration tests.
+The project is written in TypeScript and targets VS Code engine `^1.105.0`. It uses **esbuild** as its bundler rather than webpack, which is a deliberate choice for faster build times. The only production dependency is the **openai** package, which powers the LLM integration found in `src/agent/llm.ts` and the agent loop in `src/agent/agentLoop.ts`. Development tooling includes ESLint with TypeScript-specific plugins for code quality, the official `@vscode/test-cli` and `@vscode/test-electron` packages for extension testing, and `@vscode/vsce` for packaging the extension into a `.vsix` file.
 
-The sole production dependency is the **openai** npm package, which indicates the extension uses OpenAI's API (likely via an LLM) to power its project analysis and question-answering capabilities. The source structure reflects this clearly: the `agent/` directory contains `agentLoop.ts` and `llm.ts` for managing LLM interactions, while the `runner/` directory handles file system access, project analysis logic, and Markdown rendering. A `services/` layer orchestrates these concerns through dedicated modules—`agentOrchestrator.ts` coordinates the agent, `configurationService.ts` manages settings, `projectOverviewService.ts` drives the overview generation, and `userInterfaceService.ts` handles VS Code UI interactions. Error handling and type definitions are organized into their own `types/` and `utils/` directories, showing a clean separation of concerns.
+The source code follows a clean, layered architecture. The `runner/` directory handles low-level concerns like file system traversal, git history analysis, project analysis, and markdown rendering. The `services/` layer sits above it, orchestrating these runners through an `agentOrchestrator`, a `configurationService`, a `projectOverviewService`, and a `userInterfaceService`. The `agent/` directory encapsulates the LLM interaction logic. Shared types and error handling are separated into dedicated `types/` and `utils/` directories. This separation of concerns makes the codebase navigable and testable. Notably, git analysis (`gitAnalysis.ts`) produces churn hotspots, bug clusters, commit velocity, and revert/hotfix metrics — all visible in the generated overview.
 
-To get started as a developer, clone the repository from GitHub, run `npm install` to pull in dependencies, and then use `npm run watch` to start a parallel development build with live esbuild bundling and TypeScript type checking. From there, you can press F5 in VS Code to launch an Extension Development Host for testing. To produce a distributable `.vsix` package, run `vsce package`, or use the convenience script `npm run install-extension` which packages and installs the extension locally in one step. The project includes `README.md`, `CHANGELOG.md`, and `CONTRIBUTING.md` for further guidance.
+To get started as a developer, clone the repository from GitHub, run `npm install` to pull dependencies, then run `npm run watch` to start both esbuild and the TypeScript compiler in watch mode for live development. The extension activates on `onStartupFinished`, so you can press F5 in VS Code to launch an Extension Development Host and test it immediately. Use `npm run compile` for a one-off build, `npm test` to run the test suite, and `npm run install-extension` (or the `-win` variant on Windows) to package and install the extension locally. The project also includes `CONTRIBUTING.md` and `CHANGELOG.md` documentation for onboarding contributors.
 
 ---
 
@@ -53,6 +53,7 @@ To get started as a developer, clone the repository from GitHub, run `npm instal
 | `npm run watch:tsc` | tsc --noEmit --watch --project tsconfig.json |
 | `npm run package` | npm run check-types && node esbuild.js --production |
 | `npm run install-extension` | vsce package && code --install-extension $(ls explain-this-project-*.vsix | sort -V | tail -1) |
+| `npm run install-extension-win` | vsce package && node -e "const fs=require('fs');const f=fs.readdirSync('.').filter(x=>x.endsWith('.vsix')).sort().pop();require('child_process').execSync('code --install-extension '+f,{stdio:'inherit'})" |
 | `npm run pretest` | npm run compile && npm run lint |
 | `npm run lint` | eslint src |
 | `npm run test` | vscode-test |
@@ -110,6 +111,7 @@ src/
 │   └── llm.ts
 ├── runner/
 │   ├── fileSystem.ts
+│   ├── gitAnalysis.ts
 │   ├── projectAnalysis.ts
 │   └── renderMarkdown.ts
 ├── services/
@@ -142,10 +144,57 @@ src/
 - @typescript-eslint/parser
 - @vscode/test-cli
 - @vscode/test-electron
+- @vscode/vsce
 - esbuild
 - eslint
 - npm-run-all
 - typescript
 
+## 🔀 Git Insights
+
+*Analyzing the last 12 months of commit history*
+
+### 🔥 Churn Hotspots
+
+Files changed most frequently:
+
+| File | Changes |
+|------|---------|
+| `package.json` | 26 |
+| `README.md` | 8 |
+| `src/extension.ts` | 7 |
+| `src/runner/projectAnalysis.ts` | 6 |
+| `PROJECT_OVERVIEW.md` | 5 |
+| `.gitignore` | 5 |
+| `src/runner/renderMarkdown.ts` | 4 |
+| `src/types/config.ts` | 4 |
+| `src/agent/llm.ts` | 4 |
+| `src/services/configurationService.ts` | 3 |
+
+### 🐛 Bug Clusters
+
+Files most often touched in fix/bug-related commits:
+
+| File | Fix Commits |
+|------|-------------|
+| `package.json` | 1 |
+| `src/extension.ts` | 1 |
+| `src/runner/gitAnalysis.ts` | 1 |
+| `src/runner/projectAnalysis.ts` | 1 |
+| `src/runner/renderMarkdown.ts` | 1 |
+| `src/services/configurationService.ts` | 1 |
+| `src/types.ts` | 1 |
+| `src/types/config.ts` | 1 |
+
+### 📈 Commit Velocity
+
+**Average:** 3 commits/month 📉 decreasing
+
+**Trend (last 12 months):** ▁▁▁▁▁▁█▁▁▁▂▁
+
+### 🚨 Revert/Hotfix Activity
+
+**1** revert/hotfix commit in the last 12 months
+
 ---
-*Generated by Explain This Project extension on 2026-04-09T13:43:42.530Z*
+*Generated by Explain This Project extension on 2026-04-09T14:01:25.951Z*
